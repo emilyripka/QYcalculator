@@ -6,8 +6,8 @@ Python-tkinter application for calculating fluorescence quantum yield via the co
 (i) Enter number of UV-vis measurements made for the QY measurement <br>
 (ii) Select files for each UV-vis measurement and enter the experiment number of that measurement file. <br>
 <i>This data was likely stored in one of two ways:</i> <br>
-&nbsp&nbsp&nbsp&nbsp&nbsp(a) all UV-vis measurements were collected, and then all scans were saved to the same file as different scans (i.e. experiment number) <br>
-&nbsp&nbsp&nbsp&nbsp&nbsp(b) after each UV-vis measurement, the scan was saved as a new file <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(a) all UV-vis measurements were collected, and then all scans were saved to the same file as different scans (i.e. experiment number) <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;(b) after each UV-vis measurement, the scan was saved as a new file <br>
 <i>It will be helpful to use the 'Plot' and 'Clear&Plot' buttons to visualize which experiment your measurement is <br>
 <i>Make sure to keep the 'Experiment #' as the desired value before proceeding.</i> <br>
 (iii) Repeat step (ii) for the fluorescence measurments. <br> 
