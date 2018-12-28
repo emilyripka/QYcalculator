@@ -1,9 +1,9 @@
 # QYcalculator
 Python-tkinter application for calculating fluorescence quantum yield via the comparative method.<sup>1</sup>
 
-'''
+```
 $python QYcalculator.py
-'''
+```
 
 ## How-To Guide
 ### (I) Standard (navigate to 'Standard' tab)
