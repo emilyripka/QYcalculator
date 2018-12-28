@@ -5,7 +5,7 @@ Python-tkinter application for calculating fluorescence quantum yield via the co
 ## How-To Guide
 First, launch to application from your terminal by navigating to your cloned directory, and entering the following:
 ```
-$python QYcalculator.py
+$ python QYcalculator.py
 ```
 ### (I) Standard (navigate to 'Standard' tab)
 (i) Enter number of UV-vis measurements made for the QY measurement <br>
