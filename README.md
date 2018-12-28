@@ -2,7 +2,7 @@
 Python-tkinter application for calculating fluorescence quantum yield via the comparative method.<sup>1</sup>
 
 ## How-To Guide
-###(I) Standard (navigate to 'Standard' tab)
+### (I) Standard (navigate to 'Standard' tab)
 (i) Enter number of UV-vis measurements made for the QY measurement
 (ii) Select files for each UV-vis measurement and enter the experiment number of that measurement file.
 <i>This data was likely stored in one of two ways:</i>
@@ -15,11 +15,11 @@ Python-tkinter application for calculating fluorescence quantum yield via the co
 (iv) Fill in the blanks at the top-right of the tab.
 (v) Navigate to the Results tab, and click the 'Standard Gradient Curve' button.
 <i>The printed 'Standard slope error (%)' needs to be less than 10% to be an accurate standard gradient curve.</i>
-###(II) Sample (navigate to 'Sample' tab)
+### (II) Sample (navigate to 'Sample' tab)
 (i) Repeat Standard steps (i) through (iv)
 (ii) Navigate to the Results tab, and click the 'Sample Gradient Curve' button.
 <i>The printed 'Sample slope error (%)' needs to be less than 10% to be an accurate sample gradient curve.</i>
-###(III) QY calculation (navigate to the 'Results' tab)
+### (III) QY calculation (navigate to the 'Results' tab)
 (i) Click the 'Sample QY Calculation' button
 
 ## References
