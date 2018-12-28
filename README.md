@@ -1,11 +1,12 @@
 # QYcalculator
 Python-tkinter application for calculating fluorescence quantum yield via the comparative method.<sup>1</sup>
 
+
+## How-To Guide
+First, launch to application from your terminal by navigating to your cloned directory, and entering the following:
 ```
 $python QYcalculator.py
 ```
-
-## How-To Guide
 ### (I) Standard (navigate to 'Standard' tab)
 (i) Enter number of UV-vis measurements made for the QY measurement <br>
 (ii) Select files for each UV-vis measurement and enter the experiment number of that measurement file. <br>
