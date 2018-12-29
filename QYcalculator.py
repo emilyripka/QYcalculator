@@ -1,3 +1,28 @@
+# emilygraceripka.com - Quantum Yield Calculator 
+# 
+# License
+# ------- 
+#
+# Notes from EGR 
+# -------------- 
+# I developed this application to help nanoscientists easily calculate relative
+# Quantum Yields from their data. Although the calculation for this value is quite
+# simple, getting the varaibles from your data to input into this calculation can be
+# quite tedious, especially if you are not using a programming language. Thus, this GUI
+# will allow researchers to select the standard and sample files, visualize the UV-vis 
+# and fluorescence data, and then calculate their quantum yield with errors, as well as 
+# making sure that the errors on the gradient curves are within the desired value.
+# 
+# Future Plans
+# ------------ 
+# 
+# Author
+# ------ 
+# Blog: www.emilygraceripka.com
+# Instagram: emilygraceripka
+# 
+# Last Updated: 2018-12-29 
+
 import Tkinter as tk
 import ttk
 import tkFileDialog, tkMessageBox
