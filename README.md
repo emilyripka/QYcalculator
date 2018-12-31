@@ -3,7 +3,7 @@ Python-tkinter application for calculating fluorescence quantum yield via the co
 
 
 ## How-To Guide
-First, launch to application from your terminal by navigating to your cloned directory, and entering the following:
+First, launch to application from your terminal by navigating to your cloned directory, and entering the following (where the command line arguments are two integers, the first for the number of standard experiments, and the second for the number of sample experiments):
 ```
 $ python QYcalculator.py # #
 ```
