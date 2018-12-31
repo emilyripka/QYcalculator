@@ -23,7 +23,6 @@ $ python QYcalculator.py # #
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>***It will be helpful to use the 'Plot' and 'Clear&Plot' buttons to visualize which experiment your measurement is</i> <br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<i>***Make sure to keep the 'Experiment #' as the desired value before proceeding.</i> <br>
 (iii) Repeat step (ii) for the fluorescence measurments. <br> 
-(iii) Repeat step (ii) for the fluorescence measurments. <br>
 (iv) Fill in the blanks at the top-right of the tab. <br>
 (v) Navigate to the Results tab, and click the 'Standard Gradient Curve' button. <br>
 <i>The printed 'Standard slope error (%)' needs to be less than 10% to be an accurate standard gradient curve.</i> <br>
