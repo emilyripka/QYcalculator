@@ -8,10 +8,10 @@ First, launch to application from your terminal by navigating to your cloned dir
 $ python QYcalculator.py # #
 ```
 ### Dependencies:
-&nbsp;&nbsp;&nbsp;-->Python 2.7
-&nbsp;&nbsp;&nbsp;-->NumPy 
-&nbsp;&nbsp;&nbsp;-->matplotlib 2
-&nbsp;&nbsp;&nbsp;-->SciPy
+&nbsp;&nbsp;&nbsp;-->Python 2.7 <br>
+&nbsp;&nbsp;&nbsp;-->NumPy  <br>
+&nbsp;&nbsp;&nbsp;-->matplotlib 2 <br>
+&nbsp;&nbsp;&nbsp;-->SciPy <br>
 ### (I) Standard (navigate to 'Standard' tab)
 (i) Enter number of UV-vis measurements made for the QY measurement <br>
 (ii) Select files for each UV-vis measurement and enter the experiment number of that measurement file. <br>
