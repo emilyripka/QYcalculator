@@ -15,32 +15,35 @@ colorList = itertools.cycle(["#ff0000","#ff3300","#ff6600","#ff9900","#ffcc00","
                              "#0099ff","#3333cc","#9933ff","#cc00cc","#cc3399","#cc0066",
                              "#cc0000"]) 
 
+# Max number of files
+maxFiles = 10
+
 # Standard global variables
 update_in_progress = False
-xAxis = np.empty((10,1000))
-yAxis = np.empty((10,1000,1000))
-Standard_shape = np.empty(10)
-yAxisExperimentArray_standardUVvis = [int(x) for x in range(10)]
-xAxis_standardPL = np.empty((10,1000))
-yAxis_standardPL = np.empty((10,1000,1000))
-Standard_shape_PL = np.empty(10)
-yAxisExperimentArray_standardPL = [int(x) for x in range(10)]
+xAxis = np.empty((maxFiles,1000))
+yAxis = np.empty((maxFiles,1000,1000))
+Standard_shape = np.empty(maxFiles)
+yAxisExperimentArray_standardUVvis = [int(x) for x in range(maxFiles)]
+xAxis_standardPL = np.empty((maxFiles,1000))
+yAxis_standardPL = np.empty((maxFiles,1000,1000))
+Standard_shape_PL = np.empty(maxFiles)
+yAxisExperimentArray_standardPL = [int(x) for x in range(maxFiles)]
 
 # Sample global variables
-xAxisUVvisSample = np.empty((10,1000))
-yAxisUVvisSample = np.empty((10,1000,1000))
-Sample_shape = np.empty(10)
-yAxisExperimentArray_sampleUVvis = [int(x) for x in range(10)]
-xAxis_samplePL = np.empty((10,1000))
-yAxis_samplePL = np.empty((10,1000,1000))
-Sample_shape_PL = np.empty(10)
-yAxisExperimentArray_samplePL = [int(x) for x in range(10)]
+xAxisUVvisSample = np.empty((maxFiles,1000))
+yAxisUVvisSample = np.empty((maxFiles,1000,1000))
+Sample_shape = np.empty(maxFiles)
+yAxisExperimentArray_sampleUVvis = [int(x) for x in range(maxFiles)]
+xAxis_samplePL = np.empty((maxFiles,1000))
+yAxis_samplePL = np.empty((maxFiles,1000,1000))
+Sample_shape_PL = np.empty(maxFiles)
+yAxisExperimentArray_samplePL = [int(x) for x in range(maxFiles)]
 
 # QY calculation variables
-absorbanceAtExcitationWavelength_standard = np.ones((10))
-absorbanceAtExcitationWavelength_sample = np.ones((10))
-PLintegral_standard = np.ones((10))
-PLintegral_sample = np.ones((10))
+absorbanceAtExcitationWavelength_standard = np.ones((maxFiles))
+absorbanceAtExcitationWavelength_sample = np.ones((maxFiles))
+PLintegral_standard = np.ones((maxFiles))
+PLintegral_sample = np.ones((maxFiles))
 popt_standard = np.ones((2))
 pcov_standard = np.ones((2,2))
 perr_standard = np.ones((2))
