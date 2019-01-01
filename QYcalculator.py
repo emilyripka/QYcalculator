@@ -1,31 +1,32 @@
-###########################################################################################
-# emilygraceripka.com - Quantum Yield Calculator                                           
-#                                                                                          
-# License                                                                                 
-# -------                                                                                  
-#
-# Notes from EGR 
-# -------------- 
-# I developed this application to help nanoscientists easily calculate relative
-# Quantum Yields from their data. Although the calculation for this value is quite
-# simple, getting the varaibles from your data to input into this calculation can be
-# quite tedious, especially if you are not using a programming language. Thus, this GUI
-# will allow researchers to select the standard and sample files, visualize the UV-vis 
-# and fluorescence data, and then calculate their quantum yield with errors, as well as 
-# making sure that the errors on the gradient curves are within the desired value.
-# 
-# Future Plans
-# ------------ 
-# (1) Add solvent selection menus which automatically update refractive index values
-# (2) Add standard selection menu which automatically updates reference QY
-# 
-# Author
-# ------ 
-# Blog: www.emilygraceripka.com
-# Instagram: emilygraceripka
-# 
-# Last Updated: 2018-12-29 
-###########################################################################################
+r'''
+ emilygraceripka.com - Quantum Yield Calculator                                           
+                                                                                          
+ License                                                                                 
+ -------                                                                                  
+
+ Notes from EGR 
+ -------------- 
+ I developed this application to help nanoscientists easily calculate relative
+ Quantum Yields from their data. Although the calculation for this value is quite
+ simple, getting the varaibles from your data to input into this calculation can be
+ quite tedious, especially if you are not using a programming language. Thus, this GUI
+ will allow researchers to select the standard and sample files, visualize the UV-vis 
+ and fluorescence data, and then calculate their quantum yield with errors, as well as 
+ making sure that the errors on the gradient curves are within the desired value.
+ 
+ Future Plans
+ ------------ 
+ (1) Add solvent selection menus which automatically update refractive index values
+ (2) Add standard selection menu which automatically updates reference QY
+ 
+ Author
+ ------ 
+ Blog: www.emilygraceripka.com
+ Instagram: emilygraceripka
+ 
+ Last Updated: 2019-01-01 
+'''
+
 import sys
 import Tkinter as tk
 import ttk
@@ -38,7 +39,43 @@ import itertools as itertools
 import scipy as scipy
 from scipy import optimize
 import QYcalculator_functions as QYCfunc
-###########################################################################################
+
+# Misc variables
+update_in_progress = False
+nFiles_Standard = int(sys.argv[1])
+nFiles_Sample = int(sys.argv[2])
+maxLength = 1000
+
+# Standard global variables
+xAxis = np.empty((nFiles_Standard,maxLength))
+yAxis = np.empty((nFiles_Standard,maxLength,maxLength))
+Standard_shape = np.empty(nFiles_Standard)
+yAxisExperimentArray_standardUVvis = [int(x) for x in range(nFiles_Standard)]
+xAxis_standardPL = np.empty((nFiles_Standard,maxLength))
+yAxis_standardPL = np.empty((nFiles_Standard,maxLength,maxLength))
+Standard_shape_PL = np.empty(nFiles_Standard)
+yAxisExperimentArray_standardPL = [int(x) for x in range(nFiles_Standard)]
+   
+# Sample global variables
+xAxisUVvisSample = np.empty((nFiles_Sample,maxLength))
+yAxisUVvisSample = np.empty((nFiles_Sample,maxLength,maxLength))
+Sample_shape = np.empty(nFiles_Sample)
+yAxisExperimentArray_sampleUVvis = [int(x) for x in range(nFiles_Sample)]
+xAxis_samplePL = np.empty((nFiles_Sample,maxLength))
+yAxis_samplePL = np.empty((nFiles_Sample,maxLength,maxLength))
+Sample_shape_PL = np.empty(nFiles_Sample)
+yAxisExperimentArray_samplePL = [int(x) for x in range(nFiles_Sample)]
+
+# QY calculation variables
+absorbanceAtExcitationWavelength_standard = np.ones((nFiles_Standard))
+absorbanceAtExcitationWavelength_sample = np.ones((nFiles_Sample))
+PLintegral_standard = np.ones((nFiles_Standard))
+PLintegral_sample = np.ones((nFiles_Sample))
+grad_standard = [int(x) for x in range(1)]
+grad_sample = [int(x) for x in range(1)] 
+error_standard = [int(x) for x in range(1)]
+error_sample = [int(x) for x in range(1)] 
+
 def QYcalculator():
     root = tk.Tk()
     root.title("QYcalculator")
@@ -52,7 +89,7 @@ def QYcalculator():
     nb.add(page1, text='Standard')
     nb.add(page2, text='Sample')
     nb.add(page3, text='Results')
-    ######################################################################################
+
     # Font options
     l_Font = "Cambria 14"
     m_Font = "Cambria 12"
@@ -65,32 +102,335 @@ def QYcalculator():
     s_Font_Italic = "Cambria 10 italic"
     # Button colors
     myGreen = "#DEFCE0"
-    # Number of sample files optional CLA
-    nFiles_startStandard = int(sys.argv[1])
-    # Number of sample files optional CLA
-    nFiles_startSample = int(sys.argv[2])
-    ######################################################################################
+
     # Standard Figure
     fig = Figure(figsize=(10,4), dpi=100)
     gs = gridspec.GridSpec(1, 2)
     ax1 = fig.add_subplot(gs[0])
     ax2 = fig.add_subplot(gs[1])
     canvas = FigureCanvasTkAgg(fig, page1)
-    ######################################################################################
+
     # Sample Figure
     figSample = Figure(figsize=(10,4), dpi=100)
     gsSample = gridspec.GridSpec(1, 2)
     ax1Sample = figSample.add_subplot(gsSample[0])
     ax2Sample = figSample.add_subplot(gsSample[1])
     canvasSample = FigureCanvasTkAgg(figSample, page2)
-    ######################################################################################
+
     # Gradient Curve Figures
     figGrad = Figure(figsize=(10,4), dpi=100)
     gsGrad = gridspec.GridSpec(1, 2)
     ax1Grad = figGrad.add_subplot(gsGrad[0])
     ax2Grad = figGrad.add_subplot(gsGrad[1])
+    ax1Grad.set_title("Standard Gradient Curve")
+    ax2Grad.set_title("Sample Gradient Curve")
     canvasGrad = FigureCanvasTkAgg(figGrad, page3)
-    ######################################################################################
+
+    # Rainbow
+    colorList = itertools.cycle(["#ff0000","#ff3300","#ff6600","#ff9900","#ffcc00","#ffff00",
+                                 "#ccff33","#99ff33","#009900","#00cc00","#00cc66", "#00ffcc",
+                                 "#0099ff","#3333cc","#9933ff","#cc00cc","#cc3399","#cc0066",
+                                 "#cc0000"]) 
+    
+    # Standard
+    # Variables
+    expNo = np.array([tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
+    expNo_standardPL = np.array([tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
+    QY_standard = tk.IntVar()
+    RI_standard = tk.DoubleVar()
+    excitationWavelength_variable = tk.DoubleVar()
+    lowerWavelengthStandard_variable = tk.DoubleVar()
+    upperWavelengthStandard_variable = tk.DoubleVar()
+
+    # Labels
+    tk.Label(page1,text="Standard Fluorescence").grid(row=14,column=0,columnspan=6)
+    tk.Label(page1, text="QY (%):").grid(row=1,column=33,columnspan=12,sticky="E")
+    tk.Label(page1, text="Refractive Index:").grid(row=2,column=33,columnspan=12,sticky="E")
+    tk.Label(page1,text="Excitation Wavelength (nm):").grid(row=0,column=7,columnspan=5,sticky="e")
+    tk.Label(page1,text="Lower Integration Wavelength (nm):").grid(row=1,column=7,columnspan=5,sticky="e")
+    tk.Label(page1,text="Upper Integration Wavelength (nm):").grid(row=2,column=7,columnspan=5,sticky="e")
+
+    # Entry boxes
+    tk.Entry(page1, textvariable=QY_standard,width=4).grid(row=1,column=46,columnspan=5,sticky="W")
+    tk.Entry(page1,textvariable=RI_standard,width=5).grid(row=2,column=46,columnspan=5,sticky="W")
+    tk.Entry(page1,textvariable=excitationWavelength_variable,width=4).grid(row=0, column=13, sticky="w")
+    tk.Entry(page1,textvariable=lowerWavelengthStandard_variable,width=4).grid(row=1, column=13, sticky="w")
+    tk.Entry(page1,textvariable=upperWavelengthStandard_variable,width=4).grid(row=2, column=13, sticky="w")
+
+    # Buttons w/ labels and entry boxes
+    for i in range(nFiles_Standard):
+        thisText_i = i+1
+
+        # Standard UV-vis
+        thisText = ('File #%d:' % thisText_i) 
+        tk.Label(page1,text=thisText).grid(row=i+1,column=0) 
+        tk.Button(page1,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readUVvis(
+            update_in_progress=update_in_progress,
+            fileNumber=i,
+            experimentNumber=expNo[i],
+            yAxis=yAxis,
+            xAxis=xAxis,
+            Shape=Standard_shape,
+            yAxisExperimentArray_UVvis=yAxisExperimentArray_standardUVvis)).grid(row=i+1,column=1)
+        thisText = ('Experiment #%d:' % thisText_i)
+        tk.Label(page1,text=thisText).grid(row=i+1,column=3)
+        tk.Entry(page1,textvariable=expNo[i],width=4).grid(row=i+1,column=4)
+        tk.Button(page1,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotUVvis(
+            fileNumber=i,
+            experimentNumber=expNo[i],
+            fig=fig,
+            ax=ax1,
+            canvas=canvas,
+            update_in_progress=update_in_progress,
+            xAxis=xAxis,
+            yAxis=yAxis,
+            colorList=colorList,
+            yAxisExperimentArray_UVvis=yAxisExperimentArray_standardUVvis,
+            Shape=Standard_shape)).grid(row=i+1,column=5)
+        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndPlotUVvis(
+            fileNumber=i,
+            experimentNumber=expNo[i],
+            fig=fig,
+            ax=ax1,
+            canvas=canvas,
+            update_in_progress=update_in_progress,
+            xAxis=xAxis,
+            yAxis=yAxis,
+            colorList=colorList,
+            yAxisExperimentArray_UVvis=yAxisExperimentArray_standardUVvis,
+            Shape=Standard_shape)).grid(row=i+1,column=6)
+
+        # Standard fluorescence
+        thisText = ('File #%d:' % thisText_i)
+        tk.Label(page1,text=thisText).grid(row=i+15,column=0) 
+        tk.Button(page1,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readFluorescence(
+            fileNumber=i,
+            experimentNumber=expNo_standardPL[i],
+            yAxis=yAxis_standardPL,
+            xAxis=xAxis_standardPL,
+            update_in_progress=update_in_progress,
+            Shape_Fluorescence=Standard_shape_PL,
+            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_standardPL 
+            )).grid(row=i+15,column=1)
+        thisText = ('Experiment #%d:' % thisText_i)
+        tk.Label(page1,text=thisText).grid(row=i+15,column=3)
+        tk.Entry(page1,textvariable=expNo_standardPL[i],width=4).grid(row=i+15,column=4)
+        tk.Button(page1,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotFluorescence(
+            fileNumber=i, 
+            experimentNumber=expNo_standardPL[i],
+            fig=fig,
+            ax=ax2,
+            canvas=canvas,
+            update_in_progress=update_in_progress,
+            xAxis=xAxis_standardPL,
+            yAxis=yAxis_standardPL,
+            colorList=colorList,
+            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_standardPL,
+            Shape_Fluorescence=Standard_shape_PL,
+            )).grid(row=i+15,column=5)
+        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndplotFluorescence(
+            fileNumber=i, 
+            experimentNumber=expNo_standardPL[i],
+            fig=fig,
+            ax=ax2,
+            canvas=canvas,
+            update_in_progress=update_in_progress,
+            xAxis=xAxis_standardPL,
+            yAxis=yAxis_standardPL,
+            colorList=colorList,
+            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_standardPL,
+            Shape_Fluorescence=Standard_shape_PL
+            )).grid(row=i+15,column=6)
+
+    # Sample
+    # Variables
+    expNo_sample = np.array([tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
+    expNo_samplePL = np.array([tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
+    excitationWavelength_variableSample = tk.DoubleVar()
+    lowerWavelengthSample_variable = tk.DoubleVar()
+    upperWavelengthSample_variable = tk.DoubleVar()
+    RI_sample = tk.DoubleVar()
+
+    # Labels
+    tk.Label(page2, text="Sample Fluorescence").grid(row=14,column=0,columnspan=6)
+    tk.Label(page2,text="Excitation Wavelength (nm):").grid(row=0,column=7,columnspan=5,sticky="e")
+    tk.Label(page2,text="Lower Integration Wavelength for Sample (nm):").grid(row=1,column=7,columnspan=5,sticky="e")
+    tk.Label(page2,text="Upper Integration Wavelength for Sample (nm):").grid(row=2,column=7,columnspan=5,sticky="e")
+    ttk.Label(page2, text="Refractive Index:").grid(row=2,column=33,columnspan=10,sticky="E")
+
+    # Entry boxes
+    tk.Entry(page2,textvariable=excitationWavelength_variableSample,width=4).grid(row=0, column=13, sticky="w")
+    tk.Entry(page2,textvariable=lowerWavelengthSample_variable,width=4).grid(row=1, column=13, sticky="w")
+    tk.Entry(page2,textvariable=upperWavelengthSample_variable,width=4).grid(row=2, column=13, sticky="w")
+    ttk.Entry(page2,textvariable=RI_sample,width=5).grid(row=2,column=44,columnspan=5,sticky="W")
+
+    # Buttons w/ labels and entry boxes
+    for i in range(nFiles_Sample):
+        thisText_i = i+1
+
+        # Sample UV-vis
+        thisText = ('File #%d:' % thisText_i) 
+        tk.Label(page2,text=thisText).grid(row=i+1,column=0) 
+        tk.Button(page2,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readUVvis(
+            update_in_progress=update_in_progress,
+            fileNumber=i,
+            experimentNumber=expNo_sample[i],
+            yAxis=yAxisUVvisSample,
+            xAxis=xAxisUVvisSample,
+            Shape=Sample_shape,
+            yAxisExperimentArray_UVvis=yAxisExperimentArray_sampleUVvis 
+            )).grid(row=i+1,column=1)
+        thisText = ('Experiment #%d:' % thisText_i)
+        tk.Label(page2,text=thisText).grid(row=i+1,column=3)
+        tk.Entry(page2,textvariable=expNo_sample[i],width=4).grid(row=i+1,column=4)
+        tk.Button(page2,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotUVvis(
+            fileNumber=i,
+            experimentNumber=expNo_sample[i],
+            fig=figSample,
+            ax=ax1Sample,
+            canvas=canvasSample,
+            update_in_progress=update_in_progress,
+            xAxis=xAxisUVvisSample,
+            yAxis=yAxisUVvisSample,
+            colorList=colorList,
+            yAxisExperimentArray_UVvis=yAxisExperimentArray_sampleUVvis,
+            Shape=Sample_shape 
+            )).grid(row=i+1,column=5)
+        tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndPlotUVvis(
+            fileNumber=i,
+            experimentNumber=expNo_sample[i],
+            fig=figSample,
+            ax=ax1Sample,
+            canvas=canvasSample,
+            update_in_progress=update_in_progress,
+            xAxis=xAxisUVvisSample,
+            yAxis=yAxisUVvisSample,
+            colorList=colorList,
+            yAxisExperimentArray_UVvis=yAxisExperimentArray_sampleUVvis,
+            Shape=Sample_shape
+            )).grid(row=i+1,column=6)   
+
+        # Sample fluorescence
+        thisText = ('File #%d:' % thisText_i)
+        tk.Label(page2,text=thisText).grid(row=i+15,column=0) 
+        tk.Button(page2,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readFluorescence(
+            fileNumber=i,
+            experimentNumber=expNo_samplePL[i],
+            yAxis=yAxis_samplePL,
+            xAxis=xAxis_samplePL,
+            update_in_progress=update_in_progress,
+            Shape_Fluorescence=Sample_shape_PL,
+            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_samplePL 
+            )).grid(row=i+15,column=1)
+        thisText = ('Experiment #%d:' % thisText_i)
+        tk.Label(page2,text=thisText).grid(row=i+15,column=3)
+        tk.Entry(page2,textvariable=expNo_samplePL[i],width=4).grid(row=i+15,column=4)
+        tk.Button(page2,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotFluorescence(
+            fileNumber=i, 
+            experimentNumber=expNo_samplePL[i],
+            fig=figSample,
+            ax=ax2Sample,
+            canvas=canvasSample,
+            update_in_progress=update_in_progress,
+            xAxis=xAxis_samplePL,
+            yAxis=yAxis_samplePL,
+            colorList=colorList,
+            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_samplePL,
+            Shape_Fluorescence=Sample_shape_PL
+            )).grid(row=i+15,column=5)
+        tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndplotFluorescence(
+            fileNumber=i, 
+            experimentNumber=expNo_samplePL[i],
+            fig=figSample,
+            ax=ax2Sample,
+            canvas=canvasSample,
+            update_in_progress=update_in_progress,
+            xAxis=xAxis_samplePL,
+            yAxis=yAxis_samplePL,
+            colorList=colorList,
+            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_samplePL,
+            Shape_Fluorescence=Sample_shape_PL 
+            )).grid(row=i+15,column=6)
+
+    # Results Page 
+    # Variables
+    gradientCurveStandard_variable = tk.DoubleVar()
+    gradientCurveSample_variable = tk.DoubleVar()
+    QYsample_variable = tk.DoubleVar()
+    QYsample_error_variable = tk.DoubleVar()
+
+    # Labels
+    ttk.Label(page3,text="Standard slope error (%):").grid(row=10,column=4,columnspan=4,sticky="E")
+    ttk.Label(page3,text="Sample slope error (%):").grid(row=11,column=4,columnspan=4,sticky="E")
+    ttk.Label(page3, text="QY (%):").grid(row=75,column=4,columnspan=1,sticky="e")
+    ttk.Label(page3, text="+/-").grid(row=75,column=6,columnspan=1,sticky="e")
+ 
+    # Entry boxes 
+    ttk.Entry(page3,textvariable=gradientCurveStandard_variable,width=4).grid(row=10,column=8,columnspan=1,sticky=tk.E+tk.W)
+    ttk.Entry(page3,textvariable=gradientCurveSample_variable,width=4).grid(row=11,column=8,columnspan=1,sticky=tk.E+tk.W)
+    ttk.Entry(page3, textvariable=QYsample_variable,width=4).grid(row=75,column=5,columnspan=1,sticky=tk.E+tk.W)
+    ttk.Entry(page3, textvariable=QYsample_error_variable,width=4).grid(row=75,column=7,columnspan=1,sticky=tk.E+tk.W)  
+
+    # Standard Gradient curve button
+    tk.Button(page3,bg=myGreen,text="Standard Gradient Curve", command=lambda:QYCfunc.UVvis_vs_FluorescencePlot(
+        fig=figGrad,
+        ax=ax1Grad,
+        canvas=canvasGrad,
+        nFiles=nFiles_Standard,
+        excitationWavelength_variable=excitationWavelength_variable,
+        lowerWavelength_variable=lowerWavelengthStandard_variable,
+        upperWavelength_variable=upperWavelengthStandard_variable,
+        gradientCurve_variable=gradientCurveStandard_variable,
+        absorbanceAtExcitationWavelength=absorbanceAtExcitationWavelength_standard,
+        FluorescenceIntegral=PLintegral_standard,
+        update_in_progress=update_in_progress,
+        xAxis=xAxis,
+        yAxis=yAxis,
+        xAxis_Fluorescence=xAxis_standardPL,
+        yAxis_Fluorescence=yAxis_standardPL,
+        yAxisExperimentArray_UVvis=yAxisExperimentArray_standardUVvis,
+        yAxisExperimentArray_Fluorescence=yAxisExperimentArray_standardPL,
+        grad=grad_standard,
+        error=error_standard
+        )).grid(row=10,column=0,columnspan=4)
+
+    # Sample Gradient curve button
+    tk.Button(page3,bg=myGreen,text="Sample Gradient Curve",command=lambda:QYCfunc.UVvis_vs_FluorescencePlot(
+        fig=figGrad,
+        ax=ax2Grad,
+        canvas=canvasGrad,
+        nFiles=nFiles_Sample,
+        excitationWavelength_variable=excitationWavelength_variableSample,
+        lowerWavelength_variable=lowerWavelengthSample_variable,
+        upperWavelength_variable=upperWavelengthSample_variable,
+        gradientCurve_variable=gradientCurveSample_variable,
+        absorbanceAtExcitationWavelength=absorbanceAtExcitationWavelength_sample,
+        FluorescenceIntegral=PLintegral_sample,
+        update_in_progress=update_in_progress,
+        xAxis=xAxisUVvisSample, 
+        yAxis=yAxisUVvisSample, 
+        xAxis_Fluorescence=xAxis_samplePL,
+        yAxis_Fluorescence=yAxis_samplePL,
+        yAxisExperimentArray_UVvis=yAxisExperimentArray_sampleUVvis,
+        yAxisExperimentArray_Fluorescence=yAxisExperimentArray_samplePL,
+        grad=grad_sample,
+        error=error_sample
+        )).grid(row=11,column=0,columnspan=4)
+
+    # QY calculation button
+    tk.Button(page3,bg=myGreen,text="Sample QY Calculation",command=lambda:QYCfunc.QYcalculation(
+        RI_standard=RI_standard,
+        RI_sample=RI_sample,
+        QY_standard=QY_standard,
+        grad_standard=grad_standard,
+        grad_sample=grad_sample,
+        error_standard=error_standard,
+        error_sample=error_sample,
+        QYsample_variable=QYsample_variable,
+        QYsample_error_variable=QYsample_error_variable,
+        update_in_progress=update_in_progress 
+        )).grid(row=75,column=0,columnspan=4)
+
     # Information page
     tk.Label(page0,text="How-To Guide",font=l_Font_Bold).grid(row=1,column=0,columnspan=3, sticky=tk.E+tk.W)
     tk.Label(page0,text="(I) Standard (navigate to 'Standard' tab)",font=m_Font_Bold).grid(row=2,column=0,columnspan=3, sticky="W")
@@ -131,174 +471,6 @@ def QYcalculator():
             font=m_Font_Bold).grid(row=18,column=0,columnspan=3, sticky="w")
     tk.Label(page0,text="(i) Click the 'Sample QY Calculation' button",
             font=s_Font).grid(row=19,column=1,columnspan=2, sticky="w")
-    ######################################################################################
-    # Standard
-    numberFilesVariableStandard = tk.IntVar()
-    numberFilesVariableStandard.set(int(sys.argv[1]))
-    #tk.Label(page1, text="Number of UV-vis files for standard (1-10):").grid(row=0,column=0,columnspan=6)
-    #tk.Entry(page1, textvariable=numberFilesVariableStandard,width=4).grid(row=0, column=6)
-    tk.Label(page1,text="Standard Fluorescence").grid(row=14,column=0,columnspan=6)
-    expNo = np.array([tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
-    expNo_standardPL = np.array([tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
-    ## Standard compound choice menu
-    #tk.Label(page1, text="Compound:").grid(row=1,column=19,columnspan=1,sticky="E")
-    #variable = tk.StringVar()
-    #variable.set("Rhodamine 6G") # default value
-    #ttk.OptionMenu(page1,variable,"Rhodamine 6G","Rhodamine 6G","Standard #2", "Standard #3").grid(row=1,column=21,columnspan=10,sticky="W")
-    # Standard compound QY entry box
-    tk.Label(page1, text="QY (%):").grid(row=1,column=33,columnspan=12,sticky="E")
-    variable2 = tk.IntVar()
-    tk.Entry(page1, textvariable=variable2,width=4).grid(row=1,column=46,columnspan=5,sticky="W")
-    ## Standard solvent selection optionmenu
-    #tk.Label(page1, text="Solvent:").grid(row=2,column=19,columnspan=1,sticky="E")
-    #variable3 = tk.StringVar()
-    #variable3.set("ethanol") # default value
-    #ttk.OptionMenu(page1,variable3,"ethanol","ethanol","methanol","butanol","acetone","toluene","hexane").grid(row=2,column=21,columnspan=10,sticky="W")
-    # Standard solvent refractive index entry box
-    tk.Label(page1, text="Refractive Index:").grid(row=2,column=33,columnspan=12,sticky="E")
-    variable4 = tk.DoubleVar()
-    tk.Entry(page1,textvariable=variable4,width=5).grid(row=2,column=46,columnspan=5,sticky="W")
-    # Excitation wavelength assignment entry box
-    excitationWavelength_variable = tk.DoubleVar()
-    tk.Label(page1,text="Excitation Wavelength (nm):").grid(row=0,column=7,columnspan=5,sticky="e")
-    tk.Entry(page1,textvariable=excitationWavelength_variable,width=4).grid(row=0, column=13, sticky="w")
-    # Lower standard PL wavelength for integration assignment entry box
-    lowerWavelengthStandard_variable = tk.DoubleVar()
-    tk.Label(page1,text="Lower Integration Wavelength (nm):").grid(row=1,column=7,columnspan=5,sticky="e")
-    tk.Entry(page1,textvariable=lowerWavelengthStandard_variable,width=4).grid(row=1, column=13, sticky="w")
-    # Upper standard PL wavelength for integration assignment entry box
-    upperWavelengthStandard_variable = tk.DoubleVar()
-    tk.Label(page1,text="Upper Integration Wavelength (nm):").grid(row=2,column=7,columnspan=5,sticky="e")
-    tk.Entry(page1,textvariable=upperWavelengthStandard_variable,width=4).grid(row=2, column=13, sticky="w")
-    for i in range(nFiles_startStandard):
-        thisText_i = i+1
-        # Standard UV-vis
-        thisText = ('File #%d:' % thisText_i) 
-        tk.Label(page1,text=thisText).grid(row=i+1,column=0) 
-        tk.Button(page1,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readUVvis(fileNumber=i,experimentNumber=expNo[i],
-            numberFiles_variable=numberFilesVariableStandard)).grid(row=i+1,column=1)
-        thisText = ('Experiment #%d:' % thisText_i)
-        tk.Label(page1,text=thisText).grid(row=i+1,column=3)
-        tk.Entry(page1,textvariable=expNo[i],width=4).grid(row=i+1,column=4)
-        tk.Button(page1,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotUVvis(fileNumber=i,experimentNumber=expNo[i],
-            fig=fig,ax1=ax1,canvas=canvas)).grid(row=i+1,column=5)
-        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndPlotUVvis(fileNumber=i,experimentNumber=expNo[i],
-            fig=fig,ax1=ax1,canvas=canvas)).grid(row=i+1,column=6)
-        # Standard fluorescence
-        thisText = ('File #%d:' % thisText_i)
-        tk.Label(page1,text=thisText).grid(row=i+15,column=0) 
-        tk.Button(page1,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readPLstandard(fileNumber=i,experimentNumber=expNo_standardPL[i],
-            numberFiles_variable=numberFilesVariableStandard)).grid(row=i+15,column=1)
-        thisText = ('Experiment #%d:' % thisText_i)
-        tk.Label(page1,text=thisText).grid(row=i+15,column=3)
-        tk.Entry(page1,textvariable=expNo_standardPL[i],width=4).grid(row=i+15,column=4)
-        tk.Button(page1,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotPLstandard(fileNumber=i,experimentNumber=expNo_standardPL[i],
-            fig=fig,ax2=ax2,canvas=canvas)).grid(row=i+15,column=5)
-        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndPlotPLstandard(fileNumber=i,experimentNumber=expNo_standardPL[i],
-            fig=fig,ax2=ax2,canvas=canvas)).grid(row=i+15,column=6)
-    ######################################################################################
-    # Sample
-    numberFilesVariableSample = tk.IntVar()
-    numberFilesVariableSample.set(int(sys.argv[2]))
-    #tk.Label(page2, text="Number of UV-vis files for sample (1-10):").grid(row=0,column=0,columnspan=6)
-    #tk.Entry(page2, textvariable=numberFilesVariableSample,width=4).grid(row=0, column=6)
-    tk.Label(page2, text="Sample Fluorescence").grid(row=14,column=0,columnspan=6)
-    expNo_sample = np.array([tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
-    expNo_samplePL = np.array([tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar(),tk.IntVar()])
-    # Excitation wavelength assignment entry box
-    excitationWavelength_variableSample = tk.DoubleVar()
-    tk.Label(page2,text="Excitation Wavelength (nm):").grid(row=0,column=7,columnspan=5,sticky="e")
-    tk.Entry(page2,textvariable=excitationWavelength_variableSample,width=4).grid(row=0, column=13, sticky="w")
-    # Lower sample PL wavelength for integration assignment entry box
-    lowerWavelengthSample_variable = tk.DoubleVar()
-    tk.Label(page2,text="Lower Integration Wavelength for Sample (nm):").grid(row=1,column=7,columnspan=5,sticky="e")
-    tk.Entry(page2,textvariable=lowerWavelengthSample_variable,width=4).grid(row=1, column=13, sticky="w")
-    # Upper sample PL wavelength for integration assignment entry box
-    upperWavelengthSample_variable = tk.DoubleVar()
-    tk.Label(page2,text="Upper Integration Wavelength for Sample (nm):").grid(row=2,column=7,columnspan=5,sticky="e")
-    tk.Entry(page2,textvariable=upperWavelengthSample_variable,width=4).grid(row=2, column=13, sticky="w")
-    ## Sample compound selection menu
-    #ttk.Label(page2, text="Compound:").grid(row=1,column=19,columnspan=1,sticky="E")
-    #variable8 = tk.StringVar()
-    #variable8.set("unknown") # default value
-    #ttk.OptionMenu(page2,variable8,"CsPbBr3","CsPbBr3","CsPbCl3", "CsPbI3").grid(row=1,column=21,columnspan=10,sticky="W")
-    ##  Sample solvent selection optionmenu
-    #ttk.Label(page2, text="Solvent:").grid(row=2,column=19,columnspan=1,sticky="E")
-    #variable6 = tk.StringVar()
-    #variable6.set("toluene") # default value
-    #ttk.OptionMenu(page2,variable6,"toluene",'toluene',"hexane","ethanol","methanol","butanol","acetone").grid(row=2,column=21,columnspan=10,sticky="W")
-    # Sample solvent refractive index entry box
-    ttk.Label(page2, text="Refractive Index:").grid(row=2,column=33,columnspan=10,sticky="E")
-    variable7 = tk.DoubleVar()
-    ttk.Entry(page2,textvariable=variable7,width=5).grid(row=2,column=44,columnspan=5,sticky="W")
-    for i in range(nFiles_startSample):
-        thisText_i = i+1
-        # Sample UV-vis
-        thisText = ('File #%d:' % thisText_i) 
-        tk.Label(page2,text=thisText).grid(row=i+1,column=0) 
-        tk.Button(page2,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readUVvisSample(fileNumber=i,experimentNumber=expNo_sample[i],
-            numberFiles_variable=numberFilesVariableSample)).grid(row=i+1,column=1)
-        thisText = ('Experiment #%d:' % thisText_i)
-        tk.Label(page2,text=thisText).grid(row=i+1,column=3)
-        tk.Entry(page2,textvariable=expNo_sample[i],width=4).grid(row=i+1,column=4)
-        tk.Button(page2,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotUVvisSample(fileNumber=i,experimentNumber=expNo_sample[i],
-            fig=figSample,ax1=ax1Sample,canvas=canvasSample)).grid(row=i+1,column=5)
-        tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndPlotUVvisSample(fileNumber=i,experimentNumber=expNo_sample[i],
-            fig=figSample,ax1=ax1Sample,canvas=canvasSample)).grid(row=i+1,column=6)   
-        # Sample fluorescence
-        thisText = ('File #%d:' % thisText_i)
-        tk.Label(page2,text=thisText).grid(row=i+15,column=0) 
-        tk.Button(page2,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readPLsample(fileNumber=i,experimentNumber=expNo_samplePL[i],
-            numberFiles_variable=numberFilesVariableSample)).grid(row=i+15,column=1)
-        thisText = ('Experiment #%d:' % thisText_i)
-        tk.Label(page2,text=thisText).grid(row=i+15,column=3)
-        tk.Entry(page2,textvariable=expNo_samplePL[i],width=4).grid(row=i+15,column=4)
-        tk.Button(page2,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotPLsample(fileNumber=i,experimentNumber=expNo_samplePL[i],
-            fig=figSample,ax2=ax2Sample,canvas=canvasSample)).grid(row=i+15,column=5)
-        tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndPlotPLsample(fileNumber=i,experimentNumber=expNo_samplePL[i],
-            fig=figSample,ax2=ax2Sample,canvas=canvasSample)).grid(row=i+15,column=6)
-    ######################################################################################
-    # Results Page 
-    # standard gradient curve slope error entry box
-    ttk.Label(page3,text="Standard slope error (%):").grid(row=10,column=4,columnspan=4,sticky="E")
-    gradientCurveStandard_variable = tk.DoubleVar()
-    gradientCurveStandard_variable.set("?") 
-    ttk.Entry(page3,textvariable=gradientCurveStandard_variable,width=4).grid(row=10,column=8,columnspan=1,sticky=tk.E+tk.W)
-    # sample gradient curve slope error entry box
-    ttk.Label(page3,text="Sample slope error (%):").grid(row=11,column=4,columnspan=4,sticky="E")
-    gradientCurveSample_variable = tk.DoubleVar()
-    gradientCurveSample_variable.set("?") 
-    ttk.Entry(page3,textvariable=gradientCurveSample_variable,width=4).grid(row=11,column=8,columnspan=1,sticky=tk.E+tk.W)
-    # Sample compound QY entry box
-    ttk.Label(page3, text="QY (%):").grid(row=75,column=4,columnspan=1,sticky="e")
-    QYsample_variable = tk.DoubleVar()
-    QYsample_variable.set("?") 
-    ttk.Entry(page3, textvariable=QYsample_variable,width=4).grid(row=75,column=5,columnspan=1,sticky=tk.E+tk.W)
-    # Sample compound QY error entry box
-    ttk.Label(page3, text="+/-").grid(row=75,column=6,columnspan=1,sticky="e")
-    QYsample_error_variable = tk.DoubleVar()
-    QYsample_error_variable.set("?") 
-    ttk.Entry(page3, textvariable=QYsample_error_variable,width=4).grid(row=75,column=7,columnspan=1,sticky=tk.E+tk.W)  
-    tk.Button(page3,bg=myGreen,text="Standard Gradient Curve", command=lambda:QYCfunc.absVsPLplotStandard(fig=figGrad,
-               ax1=ax1Grad,
-               canvas=canvasGrad,
-               numberFiles_variable=numberFilesVariableStandard,
-               excitationWavelength_variable=excitationWavelength_variable,
-               lowerWavelengthStandard_variable=lowerWavelengthStandard_variable,
-               upperWavelengthStandard_variable=upperWavelengthStandard_variable,
-               gradientCurveStandard_variable=gradientCurveStandard_variable  
-               )).grid(row=10,column=0,columnspan=4)
-    tk.Button(page3,bg=myGreen,text="Sample Gradient Curve",command=lambda:QYCfunc.absVsPLplotSample(fig=figGrad,
-          ax2=ax2Grad,
-          canvas=canvasGrad,
-          numberFiles_variable=numberFilesVariableSample,
-          excitationWavelength_variableSample=excitationWavelength_variableSample,
-          lowerWavelengthSample_variable=lowerWavelengthSample_variable,
-          upperWavelengthSample_variable=upperWavelengthSample_variable,
-          gradientCurveSample_variable=gradientCurveSample_variable)).grid(row=11,column=0,columnspan=4)
-    tk.Button(page3,bg=myGreen,text="Sample QY Calculation",command=lambda:QYCfunc.QYcalculation(variable4=variable4,
-      variable7=variable7,
-      variable2=variable2)).grid(row=75,column=0,columnspan=4)
 
     nb.grid(row=0,column=0)
     root.mainloop()
