@@ -1,61 +1,46 @@
-import Tkinter as tk
-import ttk
+r'''Contains functions for reading/plotting UVvis and Fluorescence files,
+as well as quantifying relative quantum yields.
+'''
 import tkFileDialog, tkMessageBox
 import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2TkAgg
-from matplotlib.figure import Figure
-from matplotlib import gridspec
-import itertools as itertools
 import scipy as scipy
 from scipy import optimize
 
-# Rainbow
-colorList = itertools.cycle(["#ff0000","#ff3300","#ff6600","#ff9900","#ffcc00","#ffff00",
-                             "#ccff33","#99ff33","#009900","#00cc00","#00cc66", "#00ffcc",
-                             "#0099ff","#3333cc","#9933ff","#cc00cc","#cc3399","#cc0066",
-                             "#cc0000"]) 
+def readUVvis(update_in_progress,
+              fileNumber,
+              experimentNumber,
+              yAxis,
+              xAxis,
+              Shape,
+              yAxisExperimentArray_UVvis):
+    r'''This reads in UVvis files and assigns x- and y- axes to an input array
+    for a given experiment nubmer which is also a parameter.
+    
+    Args:
+        update_in_progress (bool): used to update tkinter varaibles
+        fileNumber (int): index for file number
+        experimentNumber (int): entry box experiment number for plotting/proccessing 
+            purposes
+        yAxis (array): 2D array to store y-axis values for all files
+        xAxis (array): 2D array to store x-axis values for all files 
+        Shape (array): 1D array to store length of y-axis
+        yAxisExperimentArray_UVvis (array): 1D array to store chosen experiment number
+            for future plotting purposes  
 
-# Standard global variables
-update_in_progress = False
-xAxis = np.empty((10,1000))
-yAxis = np.empty((10,1000,1000))
-Standard_shape = np.empty(10)
-yAxisExperimentArray_standardUVvis = [int(x) for x in range(10)]
-xAxis_standardPL = np.empty((10,1000))
-yAxis_standardPL = np.empty((10,1000,1000))
-Standard_shape_PL = np.empty(10)
-yAxisExperimentArray_standardPL = [int(x) for x in range(10)]
+    Returns:
+        yAxisExperimentArray_UVvis[fileNumber]: entry box experiment number is assigned
+            to the index of the yAxisExperimentArray_UVvis at the current file
+            number for future plotting/proccessing purposes  
+        xAxis[fileNumber][0:xLength]: assigned to the x-axis of the user-selected file 
+        yAxis[fileNumber,0:yLength_1,0:yLength_2]: assigned to the y-axis of the 
+            user-selected file
+        Shape[fileNumber]: assigned to the length of the y-axis of the user-selected file 
 
-# Sample global variables
-xAxisUVvisSample = np.empty((10,1000))
-yAxisUVvisSample = np.empty((10,1000,1000))
-Sample_shape = np.empty(10)
-yAxisExperimentArray_sampleUVvis = [int(x) for x in range(10)]
-xAxis_samplePL = np.empty((10,1000))
-yAxis_samplePL = np.empty((10,1000,1000))
-Sample_shape_PL = np.empty(10)
-yAxisExperimentArray_samplePL = [int(x) for x in range(10)]
+    Notes to EGR:
+        (1) Why am I using this shape variable? Do I really need it?
 
-# QY calculation variables
-absorbanceAtExcitationWavelength_standard = np.ones((10))
-absorbanceAtExcitationWavelength_sample = np.ones((10))
-PLintegral_standard = np.ones((10))
-PLintegral_sample = np.ones((10))
-popt_standard = np.ones((2))
-pcov_standard = np.ones((2,2))
-perr_standard = np.ones((2))
-popt_sample = np.ones((2))
-pcov_sample = np.ones((2,2))
-perr_sample = np.ones((2))
-
-update_in_progress = False
-
-def readUVvis(fileNumber,experimentNumber,numberFiles_variable):
-    global yAxis
-    global xAxis
-    global Standard_shape
-    global update_in_progress
-    global yAxisExperimentArray_standardVvis
+    '''
 
     fileName =  tkFileDialog.askopenfilename(title='Choose a UV-vis file')
     rawData_1 = np.genfromtxt(str(fileName), delimiter=",")
@@ -69,199 +54,103 @@ def readUVvis(fileNumber,experimentNumber,numberFiles_variable):
         expNumber = experimentNumber.get()
     except ValueError:
         return
-    numberFilesEntry = numberFiles_variable.get()
-    update_in_progress = True
-    yAxisExperimentArray_standardUVvis[fileNumber] = expNumber
-    update_in_progress = False
 
-    x_Global = np.ones((numberFilesEntry,x_1.shape[0]))
+    x_Global = np.ones(x_1.shape[0])
     for i in range(x_1.shape[0]):
-        x_Global[fileNumber,i] = x_1[i]
-    xLength = x_Global.shape[1]
+        x_Global[i] = x_1[i]
+    xLength = x_Global.shape[0]
     xAxis[fileNumber] = np.zeros((1000))
-    update_in_progress = True
-    xAxis[fileNumber][0:xLength] = x_Global[fileNumber]
-    update_in_progress = False
 
-    y_Global = np.ones((numberFilesEntry,y_1.shape[0],y_1.shape[1]))
+    y_Global = np.ones((y_1.shape[0],y_1.shape[1]))
     for i in range(y_1.shape[0]):
         for j in range(y_1.shape[1]):
-            y_Global[fileNumber,i,j] = y_1[i,j]
-    yLength_1 = y_Global.shape[1]
-    yLength_2 = y_Global.shape[2]
+            y_Global[i,j] = y_1[i,j]
+    yLength_1 = y_Global.shape[0]
+    yLength_2 = y_Global.shape[1]
     yAxis[fileNumber] = np.zeros((1000,1000))
 
     update_in_progress = True
-    yAxis[fileNumber,0:yLength_1,0:yLength_2] = y_Global[fileNumber]
-    update_in_progress = True
-    Standard_shape[fileNumber] = int((np.shape(y_1))[1])
+    yAxisExperimentArray_UVvis[fileNumber] = expNumber
+    xAxis[fileNumber][0:xLength] = x_Global
+    yAxis[fileNumber,0:yLength_1,0:yLength_2] = y_Global
+    Shape[fileNumber] = int((np.shape(y_1))[1])
     update_in_progress = False
 
-def readUVvisSample(fileNumber,experimentNumber,numberFiles_variable):
-    global yAxisUVvisSample
-    global xAxisUVvisSample
-    global Sample_shape
-    global update_in_progress
-    global yAxisExperimentArray_sampleUVvis
+def plotUVvis(fileNumber, 
+              experimentNumber,
+              fig,
+              ax,
+              canvas,
+              update_in_progress,
+              xAxis,
+              yAxis,
+              colorList,
+              yAxisExperimentArray_UVvis,
+              Shape):
 
-    fileName =  tkFileDialog.askopenfilename(title='Choose a UV-vis file')
-    rawData_1 = np.genfromtxt(str(fileName), delimiter=",")
-    rawData_2 = np.delete(rawData_1, list(range(2, rawData_1.shape[1], 2)), axis=1)
-    rawData_3 = np.transpose(rawData_2)
-    x_1 = rawData_3[0,:]
-    y_1 = rawData_3[1:,:]
+    if update_in_progress: return
+    expNumber = experimentNumber.get()
+    length = int(Shape[fileNumber])
+    columnNumber = expNumber - 1
+    yAxisPlotting = yAxis[fileNumber][columnNumber][:]
+    xAxisPlotting = xAxis[fileNumber]
+
+    ax.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
+    ax.set_xlabel("Wavelength (nm)")
+    ax.set_ylabel("UV-vis Absorbance (a.u.)")
+    canvas.show()
+    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
+    canvas.draw()
+
+    update_in_progress = True
+    yAxisExperimentArray_UVvis[fileNumber] = expNumber
+    update_in_progress = False
+
+def clearAndPlotUVvis(fileNumber, 
+                      experimentNumber,
+                      fig,
+                      ax,
+                      canvas,
+                      update_in_progress,
+                      xAxis,
+                      yAxis,
+                      colorList,
+                      yAxisExperimentArray_UVvis,
+                      Shape):
+
+    if update_in_progress: return
+    expNumber = experimentNumber.get()
+    length = int(Shape[fileNumber])
+
+    columnNumber = expNumber - 1
+    yAxisPlotting = yAxis[fileNumber][columnNumber][:]
+    xAxisPlotting = xAxis[fileNumber]
+
+    ax.clear()
+    ax.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
+    ax.set_xlabel("Wavelength (nm)")
+    ax.set_ylabel("UV-vis Absorbance (a.u.)")
+    canvas.show()
+    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
+    canvas.draw()
+
+    update_in_progress = True
+    yAxisExperimentArray_UVvis[fileNumber] = expNumber
+    update_in_progress = False
+
+def readFluorescence(fileNumber,
+                     experimentNumber,
+                     yAxis,
+                     xAxis,
+                     update_in_progress,
+                     Shape_Fluorescence,
+                     yAxisExperimentArray_Fluorescence):
 
     if update_in_progress: return
     try:
         expNumber = experimentNumber.get()
     except ValueError:
         return
-    numberFilesEntry = numberFiles_variable.get()
-    update_in_progress = True
-    yAxisExperimentArray_sampleUVvis[fileNumber] = expNumber
-    update_in_progress = False
-
-    x_Global = np.ones((numberFilesEntry,x_1.shape[0]))
-    for i in range(x_1.shape[0]):
-        x_Global[fileNumber,i] = x_1[i]
-    xLength = x_Global.shape[1]
-    xAxisUVvisSample[fileNumber] = np.zeros((1000))
-    update_in_progress = True
-    xAxisUVvisSample[fileNumber][0:xLength] = x_Global[fileNumber]
-    update_in_progress = False
-
-    y_Global = np.ones((numberFilesEntry,y_1.shape[0],y_1.shape[1]))
-    for i in range(y_1.shape[0]):
-        for j in range(y_1.shape[1]):
-            y_Global[fileNumber,i,j] = y_1[i,j]
-    yLength_1 = y_Global.shape[1]
-    yLength_2 = y_Global.shape[2]
-    yAxisUVvisSample[fileNumber] = np.zeros((1000,1000))
-
-    update_in_progress = True
-    yAxisUVvisSample[fileNumber,0:yLength_1,0:yLength_2] = y_Global[fileNumber]
-    Sample_shape[fileNumber] = int((np.shape(y_1))[1])
-    update_in_progress = False
-
-def plotUVvis(fileNumber, experimentNumber,fig,ax1,canvas):
-    global update_in_progress
-    global xAxis
-    global yAxis
-    global colorList
-    global yAxisExperimentArray_standardUVvis
-
-    if update_in_progress: return
-    expNumber = experimentNumber.get()
-    length = int(Standard_shape[fileNumber])
-
-    update_in_progress = True
-    yAxisExperimentArray_standardUVvis[fileNumber] = expNumber
-    update_in_progress = False
-
-    columnNumber = expNumber - 1
-    yAxisPlotting = yAxis[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxis[fileNumber]
-    ax1.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax1.set_xlabel("Wavelength (nm)")
-    ax1.set_ylabel("UV-vis Absorbance (a.u.)")
-    canvas.show()
-    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-    canvas.draw()
-
-def plotUVvisSample(fileNumber, experimentNumber,fig,ax1,canvas):
-    global update_in_progress
-    global xAxisUVvisSample
-    global yAxisUVvisSample
-    global colorList
-    global yAxisExperimentArray_sampleUVvis
-
-    if update_in_progress: return
-    expNumber = experimentNumber.get()
-    length = int(Sample_shape[fileNumber])
-
-    update_in_progress = True
-    yAxisExperimentArray_sampleUVvis[fileNumber] = expNumber
-    update_in_progress = False
-
-    columnNumber = expNumber - 1
-    yAxisPlotting = yAxisUVvisSample[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxisUVvisSample[fileNumber]
-    ax1.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax1.set_xlabel("Wavelength (nm)")
-    ax1.set_ylabel("UV-vis Absorbance (a.u.)")
-    canvas.show()
-    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-    canvas.draw()
-
-def clearAndPlotUVvis(fileNumber, experimentNumber,fig,ax1,canvas):
-    global update_in_progress
-    global xAxis
-    global yAxis
-    global colorList
-    global yAxisExperimentArray_standardUVvis
-
-    if update_in_progress: return
-    expNumber = experimentNumber.get()
-    length = int(Standard_shape[fileNumber])
-
-    update_in_progress = True
-    yAxisExperimentArray_standardUVvis[fileNumber] = expNumber
-    update_in_progress = False
-
-    columnNumber = expNumber - 1
-    yAxisPlotting = yAxis[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxis[fileNumber]
-    ax1.clear()
-    ax1.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax1.set_xlabel("Wavelength (nm)")
-    ax1.set_ylabel("UV-vis Absorbance (a.u.)")
-    canvas.show()
-    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-    canvas.draw()
-
-def clearAndPlotUVvisSample(fileNumber, experimentNumber,fig,ax1,canvas):
-    global update_in_progress
-    global xAxisUVvisSample
-    global yAxisUVvisSample
-    global colorList
-    global yAxisExperimentArray_sampleUVvis
-
-    if update_in_progress: return
-    expNumber = experimentNumber.get()
-    length = int(Sample_shape[fileNumber])
-
-    update_in_progress = True
-    yAxisExperimentArray_sampleUVvis[fileNumber] = expNumber
-    update_in_progress = False
-
-    columnNumber = expNumber - 1
-    yAxisPlotting = yAxisUVvisSample[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxisUVvisSample[fileNumber]
-    ax1.clear()
-    ax1.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax1.set_xlabel("Wavelength (nm)")
-    ax1.set_ylabel("UV-vis Absorbance (a.u.)")
-    canvas.show()
-    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-    canvas.draw()
-
-def readPLstandard(fileNumber,experimentNumber,numberFiles_variable):
-    global yAxis_standardPL
-    global xAxis_standardPL
-    global update_in_progress
-    global Standard_shape_PL
-    global yAxisExperimentArray_standardPL
-
-    if update_in_progress: return
-    try:
-        numberFilesEntry = numberFiles_variable.get()
-        expNumber = experimentNumber.get()
-    except ValueError:
-        return
-
-    update_in_progress = True
-    numberFiles_variable = numberFilesEntry
-    update_in_progress = False
 
     fileName =  tkFileDialog.askopenfilename(title='Choose a PL file')
     rawData_1 = np.genfromtxt(str(fileName), delimiter=",")
@@ -270,62 +159,38 @@ def readPLstandard(fileNumber,experimentNumber,numberFiles_variable):
     x_1 = rawData_3[0,:]
     y_1 = rawData_3[1:,:]
 
-    if update_in_progress: return
-    try:
-        expNumber = experimentNumber.get()
-    except ValueError:
-        return
-    update_in_progress = True
-    yAxisExperimentArray_standardPL[fileNumber] = expNumber
-    update_in_progress = False
-    numberFilesEntry = numberFiles_variable
-
-    x_Global = np.ones((numberFilesEntry,x_1.shape[0]))
+    x_Global = np.ones(x_1.shape[0])
     for i in range(x_1.shape[0]):
-        x_Global[fileNumber,i] = x_1[i]
-    xLength = x_Global.shape[1]
-    xAxis_standardPL[fileNumber] = np.zeros((1000))
-    update_in_progress = True
-    xAxis_standardPL[fileNumber][0:xLength] = x_Global[fileNumber]
-    update_in_progress = False
+        x_Global[i] = x_1[i]
+    xLength = x_Global.shape[0]
+    xAxis[fileNumber] = np.zeros((1000))
 
-    y_Global = np.ones((numberFilesEntry,y_1.shape[0],y_1.shape[1]))
+    y_Global = np.ones((y_1.shape[0],y_1.shape[1]))
     for i in range(y_1.shape[0]):
         for j in range(y_1.shape[1]):
-            y_Global[fileNumber,i,j] = y_1[i,j]
-    yLength_1 = y_Global.shape[1]
-    yLength_2 = y_Global.shape[2]
-    yAxis_standardPL[fileNumber] = np.zeros((1000,1000))
+            y_Global[i,j] = y_1[i,j]
+    yLength_1 = y_Global.shape[0]
+    yLength_2 = y_Global.shape[1]
+    yAxis[fileNumber] = np.zeros((1000,1000))
 
     update_in_progress = True
-    yAxis_standardPL[fileNumber,0:yLength_1,0:yLength_2] = y_Global[fileNumber]
-    Standard_shape_PL[fileNumber] = int((np.shape(y_1))[1])
+    xAxis[fileNumber][0:xLength] = x_Global
+    yAxisExperimentArray_Fluorescence[fileNumber] = expNumber
+    yAxis[fileNumber,0:yLength_1,0:yLength_2] = y_Global
+    Shape_Fluorescence[fileNumber] = int((np.shape(y_1))[1])
     update_in_progress = False
 
-def readPLsample(fileNumber,experimentNumber,numberFiles_variable):
-    global yAxis_samplePL
-    global xAxis_samplePL
-    global Sample_shape_PL
-    global update_in_progress
-    global yAxisExperimentArray_samplePL
-
-    if update_in_progress: return
-    try:
-        numberFilesEntry = numberFiles_variable.get()
-        expNumber = experimentNumber.get()
-    except ValueError:
-        return
-
-    update_in_progress = True
-    numberFiles_variable = numberFilesEntry
-    update_in_progress = False
-
-    fileName =  tkFileDialog.askopenfilename(title='Choose a PL file')
-    rawData_1 = np.genfromtxt(str(fileName), delimiter=",")
-    rawData_2 = np.delete(rawData_1, list(range(2, rawData_1.shape[1], 2)), axis=1)
-    rawData_3 = np.transpose(rawData_2)
-    x_1 = rawData_3[0,:]
-    y_1 = rawData_3[1:,:]
+def plotFluorescence(fileNumber, 
+                     experimentNumber,
+                     fig,
+                     ax,
+                     canvas,
+                     update_in_progress,
+                     xAxis,
+                     yAxis,
+                     colorList,
+                     yAxisExperimentArray_Fluorescence,
+                     Shape_Fluorescence):
 
     if update_in_progress: return
     try:
@@ -333,323 +198,158 @@ def readPLsample(fileNumber,experimentNumber,numberFiles_variable):
     except ValueError:
         return
 
-    update_in_progress = True
-    yAxisExperimentArray_samplePL[fileNumber] = expNumber
-    update_in_progress = False
-
-    numberFilesEntry = numberFiles_variable
-    x_Global = np.ones((numberFilesEntry,x_1.shape[0]))
-    for i in range(x_1.shape[0]):
-        x_Global[fileNumber,i] = x_1[i]
-    xLength = x_Global.shape[1]
-    xAxis_samplePL[fileNumber] = np.zeros((1000))
-
-    update_in_progress = True
-    xAxis_samplePL[fileNumber][0:xLength] = x_Global[fileNumber]
-    update_in_progress = False
-
-    y_Global = np.ones((numberFilesEntry,y_1.shape[0],y_1.shape[1]))
-    for i in range(y_1.shape[0]):
-        for j in range(y_1.shape[1]):
-            y_Global[fileNumber,i,j] = y_1[i,j]
-    yLength_1 = y_Global.shape[1]
-    yLength_2 = y_Global.shape[2]
-    yAxis_samplePL[fileNumber] = np.zeros((1000,1000))
-
-    update_in_progress = True
-    yAxis_samplePL[fileNumber,0:yLength_1,0:yLength_2] = y_Global[fileNumber]
-    Sample_shape_PL[fileNumber] = int((np.shape(y_1))[1])
-    update_in_progress = False
-
-def plotPLstandard(fileNumber, experimentNumber,fig,ax2,canvas):
-    global update_in_progress
-    global xAxis_standardPL
-    global yAxis_standardPL
-    global colorList
-    global yAxisExperimentArray_standardPL
-
-    if update_in_progress: return
-    expNumber = experimentNumber.get()
-
-    update_in_progress = True
-    yAxisExperimentArray_standardPL[fileNumber] = expNumber
-    update_in_progress = False
-
-    length = int(Standard_shape_PL[fileNumber])
+    length = int(Shape_Fluorescence[fileNumber])
     columnNumber = expNumber - 1
-    yAxisPlotting = yAxis_standardPL[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxis_standardPL[fileNumber]
-    ax2.yaxis.tick_right()
-    ax2.yaxis.set_label_position("right")
-    ax2.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax2.set_xlabel("Wavelength (nm)")
-    ax2.set_ylabel("PL Intensity (a.u.)")
+    yAxisPlotting = yAxis[fileNumber][columnNumber][:]
+    xAxisPlotting = xAxis[fileNumber]
+
+    ax.yaxis.tick_right()
+    ax.yaxis.set_label_position("right")
+    ax.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
+    ax.set_xlabel("Wavelength (nm)")
+    ax.set_ylabel("PL Intensity (a.u.)")
     canvas.show()
     canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
     canvas.draw()
 
-def plotPLsample(fileNumber, experimentNumber,fig,ax2,canvas):
-    global update_in_progress
-    global xAxis_samplePL
-    global yAxis_samplePL
-    global colorList
-    global yAxisExperimentArray_samplePL
+    update_in_progress = True
+    yAxisExperimentArray_Fluorescence[fileNumber] = expNumber
+    update_in_progress = False
+
+def clearAndplotFluorescence(fileNumber, 
+                             experimentNumber,
+                             fig,
+                             ax,
+                             canvas,
+                             update_in_progress,
+                             xAxis,
+                             yAxis,
+                             colorList,
+                             yAxisExperimentArray_Fluorescence,
+                             Shape_Fluorescence):
 
     if update_in_progress: return
-    expNumber = experimentNumber.get()
-    length = int(Sample_shape_PL[fileNumber])
+    try:
+        expNumber = experimentNumber.get()
+    except ValueError:
+        return
 
-    update_in_progress = True
-    yAxisExperimentArray_samplePL[fileNumber] = expNumber
-    update_in_progress = False
-    
+    length = int(Shape_Fluorescence[fileNumber])
     columnNumber = expNumber - 1
-    yAxisPlotting = yAxis_samplePL[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxis_samplePL[fileNumber]
-    ax2.yaxis.tick_right()
-    ax2.yaxis.set_label_position("right")
-    ax2.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax2.set_xlabel("Wavelength (nm)")
-    ax2.set_ylabel("PL Intensity (a.u.)")
+    yAxisPlotting = yAxis[fileNumber][columnNumber][:]
+    xAxisPlotting = xAxis[fileNumber]
+
+    ax.yaxis.tick_right()
+    ax.yaxis.set_label_position("right")
+    ax.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
+    ax.set_xlabel("Wavelength (nm)")
+    ax.set_ylabel("PL Intensity (a.u.)")
     canvas.show()
     canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
     canvas.draw()
 
-def clearAndPlotPLstandard(fileNumber, experimentNumber,fig,ax2,canvas):
-    global update_in_progress
-    global xAxis_standardPL
-    global yAxis_standardPL
-    global colorList
-    global yAxisExperimentArray_standardPL
-
-    if update_in_progress: return
-    expNumber = experimentNumber.get()
-
     update_in_progress = True
-    yAxisExperimentArray_standardPL[fileNumber] = expNumber
+    yAxisExperimentArray_Fluorescence[fileNumber] = expNumber
     update_in_progress = False
-
-    length = int(Standard_shape_PL[fileNumber])
-    columnNumber = expNumber - 1
-    yAxisPlotting = yAxis_standardPL[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxis_standardPL[fileNumber]
-    ax2.clear()
-    ax2.yaxis.tick_right()
-    ax2.yaxis.set_label_position("right")
-    ax2.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax2.set_xlabel("Wavelength (nm)")
-    ax2.set_ylabel("PL Intensity (a.u.)")
-    canvas.show()
-    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-    canvas.draw()
-
-def clearAndPlotPLsample(fileNumber, experimentNumber,fig,ax2,canvas):
-    global update_in_progress
-    global xAxis_samplePL
-    global yAxis_samplePL
-    global colorList
-    global yAxisExperimentArray_samplePL
-
-    if update_in_progress: return
-    expNumber = experimentNumber.get()
-    length = int(Sample_shape_PL[fileNumber])
-
-    update_in_progress = True
-    yAxisExperimentArray_samplePL[fileNumber] = expNumber
-    update_in_progress = False
-    
-    columnNumber = expNumber - 1
-    yAxisPlotting = yAxis_samplePL[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxis_samplePL[fileNumber]
-    ax2.clear()
-    ax2.yaxis.tick_right()
-    ax2.yaxis.set_label_position("right")
-    ax2.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax2.set_xlabel("Wavelength (nm)")
-    ax2.set_ylabel("PL Intensity (a.u.)")
-    canvas.show()
-    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-    canvas.draw()
 
 def linear(x,m,b):
     return m*x + b
 
-def absVsPLplotStandard(fig,ax1,canvas,numberFiles_variable,excitationWavelength_variable,
-       lowerWavelengthStandard_variable,upperWavelengthStandard_variable,
-       gradientCurveStandard_variable):
-    global absorbanceAtExcitationWavelength_standard
-    global PLintegral_standard
-    global update_in_progress
-    global xAxis
-    global yAxis
-    global xAxis_standardPL
-    global yAxis_standardPL
-    global yAxisExperimentArray_standardUVvis
-    global yAxisExperimentArray_standardPL
-    global popt_standard
-    global pcov_standard
-    global perr_standard 
+def UVvis_vs_FluorescencePlot(fig,
+                              ax,
+                              canvas,
+                              nFiles,
+                              excitationWavelength_variable,
+                              lowerWavelength_variable,
+                              upperWavelength_variable,
+                              gradientCurve_variable,
+                              absorbanceAtExcitationWavelength,
+                              FluorescenceIntegral,
+                              update_in_progress,
+                              xAxis,
+                              yAxis,
+                              xAxis_Fluorescence,
+                              yAxis_Fluorescence,
+                              yAxisExperimentArray_UVvis,
+                              yAxisExperimentArray_Fluorescence,
+                              grad,
+                              error): 
 
     if update_in_progress: return
     try:
         excitationWavelengthEntry = excitationWavelength_variable.get()
-        lowerWavelength = lowerWavelengthStandard_variable.get()
-        upperWavelength = upperWavelengthStandard_variable.get()
-        nFiles = numberFiles_variable.get()
+        lowerWavelength = lowerWavelength_variable.get()
+        upperWavelength = upperWavelength_variable.get()
     except ValueError:
         return
 
     absorbanceAtExcitationWavelength = np.ones((nFiles))
     excitationWavelengthIndex = 0
+
     for counter,value in enumerate(xAxis[0]):
         if value == excitationWavelengthEntry:
             excitationWavelengthIndex = counter
+
     lowerWavelengthIndex = 0
     upperWavelengthIndex = 0
-    xAxisEnumerate = xAxis_standardPL[0,:]
+    xAxisEnumerate = xAxis_Fluorescence[0,:]
+
     for counter,value in enumerate(xAxisEnumerate):
         if value == lowerWavelength:
             lowerWavelengthIndex = counter
+
     for counter,value in enumerate(xAxisEnumerate):
         if value == upperWavelength:
             upperWavelengthIndex = counter
+
     for i in range(nFiles):
        absorbanceAtExcitationWavelength[i] = \
-                    yAxis[i,(yAxisExperimentArray_standardUVvis[i]-1),excitationWavelengthIndex]
-
-    update_in_progress = True
-    absorbanceAtExcitationWavelength_standard = absorbanceAtExcitationWavelength
-    update_in_progress = False
+                    yAxis[i,(yAxisExperimentArray_UVvis[i]-1),excitationWavelengthIndex]
 
     PLintegral = np.ones((nFiles))
     for i in range(nFiles):
-        PLintegral[i] = np.trapz(yAxis_standardPL[i,(yAxisExperimentArray_standardPL[i]-1),
-                                 lowerWavelengthIndex:upperWavelengthIndex])
+        PLintegral[i] = np.trapz(yAxis_Fluorescence[i,(yAxisExperimentArray_Fluorescence[i]-1),lowerWavelengthIndex:upperWavelengthIndex])
 
-    update_in_progress = True
-    PLintegral_standard = PLintegral
-    update_in_progress = False
+    ax.plot(absorbanceAtExcitationWavelength, PLintegral, "ro")
+    ax.set_xlabel("Absorbance at Excitation Wavelength", family="serif",  fontsize=10)
+    ax.set_ylabel("Area Under Fluorescence Curve", family="serif", fontsize=10)
+    popt_local, pcov_local = scipy.optimize.curve_fit(linear, absorbanceAtExcitationWavelength,PLintegral, p0=[(2e8/0.0225),0])
+    perr_local = np.sqrt(np.diag(pcov_local))
 
-    ax1.clear()
-    ax1.set_title("Standard Gradient Curve")
-    ax1.plot(absorbanceAtExcitationWavelength, PLintegral, "ro")
-    ax1.set_xlabel("Absorbance at Excitation Wavelength", family="serif",  fontsize=10)
-    ax1.set_ylabel("Area Under PL Curve", family="serif", fontsize=10)
-    popt, pcov = scipy.optimize.curve_fit(linear, absorbanceAtExcitationWavelength,
-                                                  PLintegral, p0=[(2e8/0.0225),0])
-    perr = np.sqrt(np.diag(pcov))
-
-    update_in_progress = True
-    popt_standard = popt
-    pcov_standard = pcov
-    perr_standard = perr
-    update_in_progress = False
-
-    ax1.plot(absorbanceAtExcitationWavelength, linear(absorbanceAtExcitationWavelength, *popt),"k-")
-    gradientCurveStandard_variable.set((perr[0]/popt[0])*100)
+    ax.plot(absorbanceAtExcitationWavelength, linear(absorbanceAtExcitationWavelength, *popt_local),"k-")
+    gradientCurve_variable.set((perr_local[0]/popt_local[0])*100)
     canvas.show()
     canvas.get_tk_widget().grid(row=13,rowspan=59,column=0,columnspan=60)
     canvas.draw()
 
-def absVsPLplotSample(fig,ax2,canvas,numberFiles_variable,
-        excitationWavelength_variableSample,lowerWavelengthSample_variable,
-        upperWavelengthSample_variable,gradientCurveSample_variable):
-    global absorbanceAtExcitationWavelength_sample
-    global PLintegral_sample
-    global update_in_progress
-    global xAxis
-    global yAxis
-    global xAxis_samplePL
-    global yAxis_samplePL
-    global yAxisExperimentArray_sampleUVvis
-    global yAxisExperimentArray_samplePL
-    global popt_sample
-    global pcov_sample
-    global perr_sample
+    update_in_progress = True
+    grad[0] = popt_local[0] 
+    error[0] = perr_local[0] 
+    update_in_progress = False
+
+def QYcalculation(RI_standard,
+                  RI_sample,
+                  QY_standard,
+                  grad_standard,
+                  grad_sample,
+                  error_standard,
+                  error_sample,
+                  QYsample_variable,
+                  QYsample_error_variable,
+                  update_in_progress):
 
     if update_in_progress: return
     try:
-        excitationWavelengthEntry = excitationWavelength_variableSample.get()
-        lowerWavelength = lowerWavelengthSample_variable.get()
-        upperWavelength = upperWavelengthSample_variable.get()
-        nFiles = numberFiles_variable.get()
+        RI_standardEntry = RI_standard.get()
+        RI_sampleEntry = RI_sample.get()
+        QY_standardEntry = QY_standard.get()
     except ValueError:
         return
 
-    absorbanceAtExcitationWavelength = np.ones((nFiles))
-    excitationWavelengthIndex = 0
-    for counter,value in enumerate(xAxis[0]):
-        if value == excitationWavelengthEntry:
-            excitationWavelengthIndex = counter
-    lowerWavelengthIndex = 0
-    upperWavelengthIndex = 0
-    xAxisEnumerate = xAxis_samplePL[0,:]
-    for counter,value in enumerate(xAxisEnumerate):
-        if value == lowerWavelength:
-            lowerWavelengthIndex = counter
-    for counter,value in enumerate(xAxisEnumerate):
-        if value == upperWavelength:
-            upperWavelengthIndex = counter
-    for i in range(nFiles):
-       absorbanceAtExcitationWavelength[i] = \
-                    yAxis[i,(yAxisExperimentArray_sampleUVvis[i]-1),excitationWavelengthIndex]
+    QY_sample = 100*((QY_standardEntry*0.01)*(grad_sample[0]/grad_standard[0])*((RI_sampleEntry**2)/(RI_standardEntry**2)))
+    QY_sample_error = (abs(QY_sample)*np.sqrt(((error_sample[0]/grad_sample[0])**2)+((error_standard[0]/grad_standard[0])**2)))
 
     update_in_progress = True
-    absorbanceAtExcitationWavelength_sample = absorbanceAtExcitationWavelength
-    update_in_progress = False
-
-    PLintegral = np.ones((nFiles))
-    for i in range(nFiles):
-        PLintegral[i] = np.trapz(yAxis_samplePL[i,(yAxisExperimentArray_samplePL[i]-1),
-                                 lowerWavelengthIndex:upperWavelengthIndex])
-
-    update_in_progress = True
-    PLintegral_sample = PLintegral
-    update_in_progress = False
-
-    ax2.clear()
-    ax2.set_title("Sample Gradient Curve")
-    ax2.yaxis.tick_right()
-    ax2.yaxis.set_label_position("right")
-    ax2.plot(absorbanceAtExcitationWavelength, PLintegral, "ro")
-    ax2.set_xlabel("Absorbance at Excitation Wavelength", family="serif",  fontsize=10)
-    ax2.set_ylabel("Area Under PL Curve", family="serif", fontsize=10)
-    popt, pcov = scipy.optimize.curve_fit(linear, absorbanceAtExcitationWavelength,
-                                                  PLintegral, p0=[(2e8/0.0225),0])
-    perr = np.sqrt(np.diag(pcov))
-
-    update_in_progress = True
-    popt_sample = popt
-    pcov_sample = pcov
-    perr_sample = perr
-    update_in_progress = False
-
-    ax2.plot(absorbanceAtExcitationWavelength, linear(absorbanceAtExcitationWavelength, *popt),"k-")
-    gradientCurveSample_variable.set((perr[0]/popt[0])*100)
-    canvas.show()
-    canvas.get_tk_widget().grid(row=13,rowspan=59,column=0,columnspan=60)
-    canvas.draw()
-
-def QYcalculation(variable4,variable7,variable2):
-    global popt_standard
-    global popt_sample
-    global perr_standard
-    global perr_sample
-    global update_in_progress
-
-    grad_standard = popt_standard[0]
-    grad_sample = popt_sample[0]
-    error_standard = perr_standard[0]
-    error_sample = perr_sample[0]
-    if update_in_progress: return
-    try:
-        RI_standardEntry = variable4.get()
-        RI_sampleEntry = variable7.get()
-        QY_standardEntry = variable2.get()
-    except ValueError:
-        return
-    QY_sample = 100*((QY_standardEntry*0.01)*(grad_sample/grad_standard)*((RI_sampleEntry**2)/(RI_standardEntry**2)))
-    QY_sample_error = (abs(QY_sample)*np.sqrt(((error_sample/grad_sample)**2)+((error_standard/grad_standard)**2)))
     QYsample_variable.set(QY_sample)
     QYsample_error_variable.set(QY_sample_error)
-
+    update_in_progress = False
