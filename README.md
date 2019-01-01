@@ -2,10 +2,10 @@
 Python-tkinter application for calculating fluorescence quantum yield via the comparative method.<sup>1</sup> See <a href="http://emilygraceripka.com/blog/17">corresponding blog post</a> for further details.
 
 ### Dependencies:
-*Python 2.7 <br>
-*NumPy  <br>
-*matplotlib 2 <br>
-*SciPy <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->Python 2.7 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->NumPy  <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->matplotlib 2 <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-->SciPy <br>
 
 ## How-To Guide
 First, launch the application from your terminal by navigating to your cloned directory, and entering the following (where the command line arguments are two integers, the first for the number of standard experiments, and the second for the number of sample experiments):
