@@ -182,9 +182,10 @@ def QYcalculator():
             xAxis=xAxis,
             yAxis=yAxis,
             colorList=colorList,
-            yAxisExperimentArray=yAxisExperimentArray_standardUVvis
+            yAxisExperimentArray=yAxisExperimentArray_standardUVvis,
+            clearPlot=False,
             )).grid(row=i+1,column=5)
-        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndPlotUVvis(
+        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotUVvis(
             fileNumber=i,
             experimentNumber=expNo[i],
             fig=fig,
@@ -194,7 +195,8 @@ def QYcalculator():
             xAxis=xAxis,
             yAxis=yAxis,
             colorList=colorList,
-            yAxisExperimentArray=yAxisExperimentArray_standardUVvis
+            yAxisExperimentArray=yAxisExperimentArray_standardUVvis,
+            clearPlot=True,
             )).grid(row=i+1,column=6)
 
         # Standard fluorescence

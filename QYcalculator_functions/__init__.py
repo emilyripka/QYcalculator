@@ -36,7 +36,6 @@ def readFile(update_in_progress,
             user-selected file
 
     Notes to EGR:
-        (1) Can i combine all read functions into 1?
 
     '''
     if update_in_progress: 
@@ -79,7 +78,8 @@ def plotUVvis(fileNumber,
               xAxis,
               yAxis,
               colorList,
-              yAxisExperimentArray):
+              yAxisExperimentArray,
+              clearPlot=False):
     r'''This reads in UVvis files and assigns x- and y- axes to an input array
     for a given experiment nubmer which is also a parameter.
     
@@ -121,6 +121,9 @@ def plotUVvis(fileNumber,
         min_index = int((np.where(xAxisPlotting == np.min(xAxisPlotting[np.nonzero(xAxisPlotting)])))[0])
         max_index = int((np.where(xAxisPlotting == np.max(xAxisPlotting[np.nonzero(xAxisPlotting)])))[0])
 
+        if clearPlot: 
+            ax.clear()
+
         ax.plot(xAxisPlotting[max_index:min_index], yAxisPlotting[max_index:min_index], color=next(colorList))
         ax.set_xlabel("Wavelength (nm)")
         ax.set_ylabel("UV-vis Absorbance (a.u.)")
@@ -130,89 +133,6 @@ def plotUVvis(fileNumber,
 
         update_in_progress = True
         yAxisExperimentArray[fileNumber] = expNumber
-        update_in_progress = False
-
-def clearAndPlotUVvis(fileNumber, 
-                      experimentNumber,
-                      fig,
-                      ax,
-                      canvas,
-                      update_in_progress,
-                      xAxis,
-                      yAxis,
-                      colorList,
-                      yAxisExperimentArray):
-    if update_in_progress: 
-        return
-
-    try:
-        expNumber = experimentNumber.get()
-
-    except ValueError:
-        return
-
-    else:
-        columnNumber = expNumber - 1
-        yAxisPlotting = yAxis[fileNumber][columnNumber]
-        xAxisPlotting = xAxis[fileNumber]
-
-        min_index = int((np.where(xAxisPlotting == np.min(xAxisPlotting[np.nonzero(xAxisPlotting)])))[0])
-        max_index = int((np.where(xAxisPlotting == np.max(xAxisPlotting[np.nonzero(xAxisPlotting)])))[0])
-
-        ax.clear()
-        ax.plot(xAxisPlotting[max_index:min_index], yAxisPlotting[max_index:min_index], color=next(colorList))
-        ax.set_xlabel("Wavelength (nm)")
-        ax.set_ylabel("UV-vis Absorbance (a.u.)")
-        canvas.show()
-        canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-        canvas.draw()
-
-        update_in_progress = True
-        yAxisExperimentArray[fileNumber] = expNumber
-        update_in_progress = False
-
-def readFluorescence(fileNumber,
-                     experimentNumber,
-                     yAxis,
-                     xAxis,
-                     update_in_progress,
-                     yAxisExperimentArray_Fluorescence):
-
-    if update_in_progress: 
-        return
-
-    try:
-        expNumber = experimentNumber.get()
-
-    except ValueError:
-        return
-
-    else:
-        fileName =  tkFileDialog.askopenfilename(title='Choose a PL file')
-        rawData_1 = np.genfromtxt(str(fileName), delimiter=",")
-        rawData_2 = np.delete(rawData_1, list(range(2, rawData_1.shape[1], 2)), axis=1)
-        rawData_3 = np.transpose(rawData_2)
-        x_1 = rawData_3[0,:]
-        y_1 = rawData_3[1:,:]
-
-        x_Global = np.ones(x_1.shape[0])
-        for i in range(x_1.shape[0]):
-            x_Global[i] = x_1[i]
-        xLength = x_Global.shape[0]
-        xAxis[fileNumber] = np.zeros((1000))
-
-        y_Global = np.ones((y_1.shape[0],y_1.shape[1]))
-        for i in range(y_1.shape[0]):
-            for j in range(y_1.shape[1]):
-                y_Global[i,j] = y_1[i,j]
-        yLength_1 = y_Global.shape[0]
-        yLength_2 = y_Global.shape[1]
-        yAxis[fileNumber] = np.zeros((1000,1000))
-
-        update_in_progress = True
-        xAxis[fileNumber][0:xLength] = x_Global
-        yAxisExperimentArray_Fluorescence[fileNumber] = expNumber
-        yAxis[fileNumber,0:yLength_1,0:yLength_2] = y_Global
         update_in_progress = False
 
 def plotFluorescence(fileNumber, 
