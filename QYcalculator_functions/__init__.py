@@ -12,7 +12,6 @@ def readUVvis(update_in_progress,
               experimentNumber,
               yAxis,
               xAxis,
-              Shape,
               yAxisExperimentArray_UVvis):
     r'''This reads in UVvis files and assigns x- and y- axes to an input array
     for a given experiment nubmer which is also a parameter.
@@ -24,7 +23,6 @@ def readUVvis(update_in_progress,
             purposes
         yAxis (array): 2D array to store y-axis values for all files
         xAxis (array): 2D array to store x-axis values for all files 
-        Shape (array): 1D array to store length of y-axis
         yAxisExperimentArray_UVvis (array): 1D array to store chosen experiment number
             for future plotting purposes  
 
@@ -35,22 +33,13 @@ def readUVvis(update_in_progress,
         xAxis[fileNumber][0:xLength]: assigned to the x-axis of the user-selected file 
         yAxis[fileNumber,0:yLength_1,0:yLength_2]: assigned to the y-axis of the 
             user-selected file
-        Shape[fileNumber]: assigned to the length of the y-axis of the user-selected file 
 
     Notes to EGR:
-        (1) Why am I using this shape variable? Do I really need it?
-        (2) Can i combine all read functions into 1?
+        (1) Can i combine all read functions into 1?
 
     '''
-
-    fileName =  tkFileDialog.askopenfilename(title='Choose a UV-vis file')
-    rawData_1 = np.genfromtxt(str(fileName), delimiter=",")
-    rawData_2 = np.delete(rawData_1, list(range(2, rawData_1.shape[1], 2)), axis=1)
-    rawData_3 = np.transpose(rawData_2)
-    x_1 = rawData_3[0,:]
-    y_1 = rawData_3[1:,:]
-
-    if update_in_progress: return
+    if update_in_progress: 
+        return
 
     try:
         expNumber = experimentNumber.get()
@@ -59,6 +48,13 @@ def readUVvis(update_in_progress,
         return
 
     else:
+        fileName =  tkFileDialog.askopenfilename(title='Choose a UV-vis file')
+        rawData_1 = np.genfromtxt(str(fileName), delimiter=",")
+        rawData_2 = np.delete(rawData_1, list(range(2, rawData_1.shape[1], 2)), axis=1)
+        rawData_3 = np.transpose(rawData_2)
+        x_1 = rawData_3[0,:]
+        y_1 = rawData_3[1:,:]
+
         x_Global = np.ones(x_1.shape[0])
         for i in range(x_1.shape[0]):
             x_Global[i] = x_1[i]
@@ -77,7 +73,6 @@ def readUVvis(update_in_progress,
         yAxisExperimentArray_UVvis[fileNumber] = expNumber
         xAxis[fileNumber][0:xLength] = x_Global
         yAxis[fileNumber,0:yLength_1,0:yLength_2] = y_Global
-        Shape[fileNumber] = int((np.shape(y_1))[1])
         update_in_progress = False
 
 def plotUVvis(fileNumber, 
@@ -89,8 +84,7 @@ def plotUVvis(fileNumber,
               xAxis,
               yAxis,
               colorList,
-              yAxisExperimentArray_UVvis,
-              Shape):
+              yAxisExperimentArray_UVvis):
     r'''This reads in UVvis files and assigns x- and y- axes to an input array
     for a given experiment nubmer which is also a parameter.
     
@@ -105,7 +99,6 @@ def plotUVvis(fileNumber,
         yAxis ():
         colorList ():
         yAxisExperimentArray_UVvis ():
-        Shape (): 
 
     Returns:
         ax
@@ -114,24 +107,30 @@ def plotUVvis(fileNumber,
     Notes to EGR:
 
     '''
+    if update_in_progress: 
+        return
 
-    if update_in_progress: return
-    expNumber = experimentNumber.get()
-    length = int(Shape[fileNumber])
-    columnNumber = expNumber - 1
-    yAxisPlotting = yAxis[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxis[fileNumber]
+    try:
+        expNumber = experimentNumber.get()
 
-    ax.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax.set_xlabel("Wavelength (nm)")
-    ax.set_ylabel("UV-vis Absorbance (a.u.)")
-    canvas.show()
-    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-    canvas.draw()
+    except ValueError:
+        return
 
-    update_in_progress = True
-    yAxisExperimentArray_UVvis[fileNumber] = expNumber
-    update_in_progress = False
+    else:
+        columnNumber = expNumber - 1
+        yAxisPlotting = yAxis[fileNumber][columnNumber][:]
+        xAxisPlotting = xAxis[fileNumber]
+
+        ax.plot(xAxisPlotting, yAxisPlotting, color=next(colorList))
+        ax.set_xlabel("Wavelength (nm)")
+        ax.set_ylabel("UV-vis Absorbance (a.u.)")
+        canvas.show()
+        canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
+        canvas.draw()
+
+        update_in_progress = True
+        yAxisExperimentArray_UVvis[fileNumber] = expNumber
+        update_in_progress = False
 
 def clearAndPlotUVvis(fileNumber, 
                       experimentNumber,
@@ -142,38 +141,43 @@ def clearAndPlotUVvis(fileNumber,
                       xAxis,
                       yAxis,
                       colorList,
-                      yAxisExperimentArray_UVvis,
-                      Shape):
+                      yAxisExperimentArray_UVvis):
 
-    if update_in_progress: return
-    expNumber = experimentNumber.get()
-    length = int(Shape[fileNumber])
+    if update_in_progress: 
+        return
 
-    columnNumber = expNumber - 1
-    yAxisPlotting = yAxis[fileNumber][columnNumber][:]
-    xAxisPlotting = xAxis[fileNumber]
+    try:
+        expNumber = experimentNumber.get()
 
-    ax.clear()
-    ax.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
-    ax.set_xlabel("Wavelength (nm)")
-    ax.set_ylabel("UV-vis Absorbance (a.u.)")
-    canvas.show()
-    canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-    canvas.draw()
+    except ValueError:
+        return
 
-    update_in_progress = True
-    yAxisExperimentArray_UVvis[fileNumber] = expNumber
-    update_in_progress = False
+    else:
+        columnNumber = expNumber - 1
+        yAxisPlotting = yAxis[fileNumber][columnNumber][:]
+        xAxisPlotting = xAxis[fileNumber]
+
+        ax.clear()
+        ax.plot(xAxisPlotting, yAxisPlotting, color=next(colorList))
+        ax.set_xlabel("Wavelength (nm)")
+        ax.set_ylabel("UV-vis Absorbance (a.u.)")
+        canvas.show()
+        canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
+        canvas.draw()
+
+        update_in_progress = True
+        yAxisExperimentArray_UVvis[fileNumber] = expNumber
+        update_in_progress = False
 
 def readFluorescence(fileNumber,
                      experimentNumber,
                      yAxis,
                      xAxis,
                      update_in_progress,
-                     Shape_Fluorescence,
                      yAxisExperimentArray_Fluorescence):
 
-    if update_in_progress: return
+    if update_in_progress: 
+        return
 
     try:
         expNumber = experimentNumber.get()
@@ -207,7 +211,6 @@ def readFluorescence(fileNumber,
         xAxis[fileNumber][0:xLength] = x_Global
         yAxisExperimentArray_Fluorescence[fileNumber] = expNumber
         yAxis[fileNumber,0:yLength_1,0:yLength_2] = y_Global
-        Shape_Fluorescence[fileNumber] = int((np.shape(y_1))[1])
         update_in_progress = False
 
 def plotFluorescence(fileNumber, 
@@ -219,10 +222,10 @@ def plotFluorescence(fileNumber,
                      xAxis,
                      yAxis,
                      colorList,
-                     yAxisExperimentArray_Fluorescence,
-                     Shape_Fluorescence):
+                     yAxisExperimentArray_Fluorescence):
 
-    if update_in_progress: return
+    if update_in_progress: 
+        return
 
     try:
         expNumber = experimentNumber.get()
@@ -231,14 +234,13 @@ def plotFluorescence(fileNumber,
         return
 
     else:
-        length = int(Shape_Fluorescence[fileNumber])
         columnNumber = expNumber - 1
         yAxisPlotting = yAxis[fileNumber][columnNumber][:]
         xAxisPlotting = xAxis[fileNumber]
 
         ax.yaxis.tick_right()
         ax.yaxis.set_label_position("right")
-        ax.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
+        ax.plot(xAxisPlotting, yAxisPlotting, color=next(colorList))
         ax.set_xlabel("Wavelength (nm)")
         ax.set_ylabel("PL Intensity (a.u.)")
         canvas.show()
@@ -258,10 +260,10 @@ def clearAndplotFluorescence(fileNumber,
                              xAxis,
                              yAxis,
                              colorList,
-                             yAxisExperimentArray_Fluorescence,
-                             Shape_Fluorescence):
+                             yAxisExperimentArray_Fluorescence):
 
-    if update_in_progress: return
+    if update_in_progress: 
+        return
 
     try:
         expNumber = experimentNumber.get()
@@ -270,14 +272,13 @@ def clearAndplotFluorescence(fileNumber,
         return
 
     else:
-        length = int(Shape_Fluorescence[fileNumber])
         columnNumber = expNumber - 1
         yAxisPlotting = yAxis[fileNumber][columnNumber][:]
         xAxisPlotting = xAxis[fileNumber]
 
         ax.yaxis.tick_right()
         ax.yaxis.set_label_position("right")
-        ax.plot(xAxisPlotting[:length], yAxisPlotting[:length], color=next(colorList))
+        ax.plot(xAxisPlotting, yAxisPlotting, color=next(colorList))
         ax.set_xlabel("Wavelength (nm)")
         ax.set_ylabel("PL Intensity (a.u.)")
         canvas.show()
@@ -311,7 +312,8 @@ def UVvis_vs_FluorescencePlot(fig,
                               grad,
                               error): 
 
-    if update_in_progress: return
+    if update_in_progress: 
+        return
 
     try:
         excitationWavelengthEntry = excitationWavelength_variable.get()
@@ -377,7 +379,8 @@ def QYcalculation(RI_standard,
                   QYsample_error_variable,
                   update_in_progress):
 
-    if update_in_progress: return
+    if update_in_progress: 
+        return
 
     try:
         RI_standardEntry = RI_standard.get()
@@ -388,7 +391,6 @@ def QYcalculation(RI_standard,
         return
 
     else:
-
         QY_sample = 100*((QY_standardEntry*0.01)*(grad_sample[0]/grad_standard[0])*((RI_sampleEntry**2)/(RI_standardEntry**2)))
         QY_sample_error = (abs(QY_sample)*np.sqrt(((error_sample[0]/grad_sample[0])**2)+((error_standard[0]/grad_standard[0])**2)))
 
