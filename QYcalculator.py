@@ -172,7 +172,7 @@ def QYcalculator():
         thisText = ('Experiment #%d:' % thisText_i)
         tk.Label(page1,text=thisText).grid(row=i+1,column=3)
         tk.Entry(page1,textvariable=expNo[i],width=4).grid(row=i+1,column=4)
-        tk.Button(page1,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotUVvis(
+        tk.Button(page1,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotExperiment(
             fileNumber=i,
             experimentNumber=expNo[i],
             fig=fig,
@@ -183,9 +183,9 @@ def QYcalculator():
             yAxis=yAxis,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_standardUVvis,
-            clearPlot=False,
+            clearPlot=False
             )).grid(row=i+1,column=5)
-        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotUVvis(
+        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotExperiment(
             fileNumber=i,
             experimentNumber=expNo[i],
             fig=fig,
@@ -196,7 +196,7 @@ def QYcalculator():
             yAxis=yAxis,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_standardUVvis,
-            clearPlot=True,
+            clearPlot=True
             )).grid(row=i+1,column=6)
 
         # Standard fluorescence
@@ -214,8 +214,8 @@ def QYcalculator():
         thisText = ('Experiment #%d:' % thisText_i)
         tk.Label(page1,text=thisText).grid(row=i+15,column=3)
         tk.Entry(page1,textvariable=expNo_standardPL[i],width=4).grid(row=i+15,column=4)
-        tk.Button(page1,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotFluorescence(
-            fileNumber=i, 
+        tk.Button(page1,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotExperiment(
+            fileNumber=i,
             experimentNumber=expNo_standardPL[i],
             fig=fig,
             ax=ax2,
@@ -224,10 +224,11 @@ def QYcalculator():
             xAxis=xAxis_standardPL,
             yAxis=yAxis_standardPL,
             colorList=colorList,
-            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_standardPL,
+            yAxisExperimentArray=yAxisExperimentArray_standardPL,
+            clearPlot=False 
             )).grid(row=i+15,column=5)
-        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndplotFluorescence(
-            fileNumber=i, 
+        tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotExperiment(
+            fileNumber=i,
             experimentNumber=expNo_standardPL[i],
             fig=fig,
             ax=ax2,
@@ -236,7 +237,8 @@ def QYcalculator():
             xAxis=xAxis_standardPL,
             yAxis=yAxis_standardPL,
             colorList=colorList,
-            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_standardPL,
+            yAxisExperimentArray=yAxisExperimentArray_standardPL,
+            clearPlot=True 
             )).grid(row=i+15,column=6)
 
     # Sample
@@ -280,7 +282,7 @@ def QYcalculator():
         thisText = ('Experiment #%d:' % thisText_i)
         tk.Label(page2,text=thisText).grid(row=i+1,column=3)
         tk.Entry(page2,textvariable=expNo_sample[i],width=4).grid(row=i+1,column=4)
-        tk.Button(page2,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotUVvis(
+        tk.Button(page2,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotExperiment(
             fileNumber=i,
             experimentNumber=expNo_sample[i],
             fig=figSample,
@@ -290,9 +292,10 @@ def QYcalculator():
             xAxis=xAxisUVvisSample,
             yAxis=yAxisUVvisSample,
             colorList=colorList,
-            yAxisExperimentArray_UVvis=yAxisExperimentArray_sampleUVvis,
+            yAxisExperimentArray=yAxisExperimentArray_sampleUVvis,
+            clearPlot=False
             )).grid(row=i+1,column=5)
-        tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndPlotUVvis(
+        tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotExperiment(
             fileNumber=i,
             experimentNumber=expNo_sample[i],
             fig=figSample,
@@ -302,7 +305,8 @@ def QYcalculator():
             xAxis=xAxisUVvisSample,
             yAxis=yAxisUVvisSample,
             colorList=colorList,
-            yAxisExperimentArray_UVvis=yAxisExperimentArray_sampleUVvis,
+            yAxisExperimentArray=yAxisExperimentArray_sampleUVvis,
+            clearPlot=True
             )).grid(row=i+1,column=6)   
 
         # Sample fluorescence
@@ -320,8 +324,8 @@ def QYcalculator():
         thisText = ('Experiment #%d:' % thisText_i)
         tk.Label(page2,text=thisText).grid(row=i+15,column=3)
         tk.Entry(page2,textvariable=expNo_samplePL[i],width=4).grid(row=i+15,column=4)
-        tk.Button(page2,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotFluorescence(
-            fileNumber=i, 
+        tk.Button(page2,bg=myGreen,text="Plot",command=lambda i=i:QYCfunc.plotExperiment(
+            fileNumber=i,
             experimentNumber=expNo_samplePL[i],
             fig=figSample,
             ax=ax2Sample,
@@ -330,10 +334,11 @@ def QYcalculator():
             xAxis=xAxis_samplePL,
             yAxis=yAxis_samplePL,
             colorList=colorList,
-            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_samplePL,
+            yAxisExperimentArray=yAxisExperimentArray_samplePL,
+            clearPlot=False 
             )).grid(row=i+15,column=5)
-        tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndplotFluorescence(
-            fileNumber=i, 
+        tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotExperiment(
+            fileNumber=i,
             experimentNumber=expNo_samplePL[i],
             fig=figSample,
             ax=ax2Sample,
@@ -342,7 +347,8 @@ def QYcalculator():
             xAxis=xAxis_samplePL,
             yAxis=yAxis_samplePL,
             colorList=colorList,
-            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_samplePL,
+            yAxisExperimentArray=yAxisExperimentArray_samplePL,
+            clearPlot=True
             )).grid(row=i+15,column=6)
 
     # Results Page 

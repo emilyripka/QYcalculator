@@ -69,17 +69,17 @@ def readFile(update_in_progress,
                 yAxis[fileNumber][i][j] = y_1[i][j]
         update_in_progress = False
 
-def plotUVvis(fileNumber, 
-              experimentNumber,
-              fig,
-              ax,
-              canvas,
-              update_in_progress,
-              xAxis,
-              yAxis,
-              colorList,
-              yAxisExperimentArray,
-              clearPlot=False):
+def plotExperiment(fileNumber, 
+                   experimentNumber,
+                   fig,
+                   ax,
+                   canvas,
+                   update_in_progress,
+                   xAxis,
+                   yAxis,
+                   colorList,
+                   yAxisExperimentArray,
+                   clearPlot=False):
     r'''This reads in UVvis files and assigns x- and y- axes to an input array
     for a given experiment nubmer which is also a parameter.
     
@@ -133,82 +133,6 @@ def plotUVvis(fileNumber,
 
         update_in_progress = True
         yAxisExperimentArray[fileNumber] = expNumber
-        update_in_progress = False
-
-def plotFluorescence(fileNumber, 
-                     experimentNumber,
-                     fig,
-                     ax,
-                     canvas,
-                     update_in_progress,
-                     xAxis,
-                     yAxis,
-                     colorList,
-                     yAxisExperimentArray_Fluorescence):
-
-    if update_in_progress: 
-        return
-
-    try:
-        expNumber = experimentNumber.get()
-
-    except ValueError:
-        return
-
-    else:
-        columnNumber = expNumber - 1
-        yAxisPlotting = yAxis[fileNumber][columnNumber][:]
-        xAxisPlotting = xAxis[fileNumber]
-
-        ax.yaxis.tick_right()
-        ax.yaxis.set_label_position("right")
-        ax.plot(xAxisPlotting, yAxisPlotting, color=next(colorList))
-        ax.set_xlabel("Wavelength (nm)")
-        ax.set_ylabel("PL Intensity (a.u.)")
-        canvas.show()
-        canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-        canvas.draw()
-
-        update_in_progress = True
-        yAxisExperimentArray_Fluorescence[fileNumber] = expNumber
-        update_in_progress = False
-
-def clearAndplotFluorescence(fileNumber, 
-                             experimentNumber,
-                             fig,
-                             ax,
-                             canvas,
-                             update_in_progress,
-                             xAxis,
-                             yAxis,
-                             colorList,
-                             yAxisExperimentArray_Fluorescence):
-
-    if update_in_progress: 
-        return
-
-    try:
-        expNumber = experimentNumber.get()
-
-    except ValueError:
-        return
-
-    else:
-        columnNumber = expNumber - 1
-        yAxisPlotting = yAxis[fileNumber][columnNumber][:]
-        xAxisPlotting = xAxis[fileNumber]
-
-        ax.yaxis.tick_right()
-        ax.yaxis.set_label_position("right")
-        ax.plot(xAxisPlotting, yAxisPlotting, color=next(colorList))
-        ax.set_xlabel("Wavelength (nm)")
-        ax.set_ylabel("PL Intensity (a.u.)")
-        canvas.show()
-        canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
-        canvas.draw()
-
-        update_in_progress = True
-        yAxisExperimentArray_Fluorescence[fileNumber] = expNumber
         update_in_progress = False
 
 def linear(x,m,b):
