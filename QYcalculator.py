@@ -183,7 +183,8 @@ def QYcalculator():
             yAxis=yAxis,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_standardUVvis,
-            clearPlot=False
+            clearPlot=False,
+            UVvisPlot=True
             )).grid(row=i+1,column=5)
         tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotExperiment(
             fileNumber=i,
@@ -196,7 +197,8 @@ def QYcalculator():
             yAxis=yAxis,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_standardUVvis,
-            clearPlot=True
+            clearPlot=True,
+            UVvisPlot=True
             )).grid(row=i+1,column=6)
 
         # Standard fluorescence
@@ -225,7 +227,8 @@ def QYcalculator():
             yAxis=yAxis_standardPL,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_standardPL,
-            clearPlot=False 
+            clearPlot=False,
+            fluorescencePlot=True,
             )).grid(row=i+15,column=5)
         tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotExperiment(
             fileNumber=i,
@@ -238,7 +241,8 @@ def QYcalculator():
             yAxis=yAxis_standardPL,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_standardPL,
-            clearPlot=True 
+            clearPlot=True,
+            fluorescencePlot=True
             )).grid(row=i+15,column=6)
 
     # Sample
@@ -293,7 +297,8 @@ def QYcalculator():
             yAxis=yAxisUVvisSample,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_sampleUVvis,
-            clearPlot=False
+            clearPlot=False,
+            UVvisPlot=True
             )).grid(row=i+1,column=5)
         tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotExperiment(
             fileNumber=i,
@@ -306,7 +311,8 @@ def QYcalculator():
             yAxis=yAxisUVvisSample,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_sampleUVvis,
-            clearPlot=True
+            clearPlot=True,
+            UVvisPlot=True
             )).grid(row=i+1,column=6)   
 
         # Sample fluorescence
@@ -335,7 +341,8 @@ def QYcalculator():
             yAxis=yAxis_samplePL,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_samplePL,
-            clearPlot=False 
+            clearPlot=False,
+            fluorescencePlot=True
             )).grid(row=i+15,column=5)
         tk.Button(page2,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.plotExperiment(
             fileNumber=i,
@@ -348,7 +355,8 @@ def QYcalculator():
             yAxis=yAxis_samplePL,
             colorList=colorList,
             yAxisExperimentArray=yAxisExperimentArray_samplePL,
-            clearPlot=True
+            clearPlot=True,
+            fluorescencePlot=True
             )).grid(row=i+15,column=6)
 
     # Results Page 

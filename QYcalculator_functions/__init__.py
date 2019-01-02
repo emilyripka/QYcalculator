@@ -79,7 +79,9 @@ def plotExperiment(fileNumber,
                    yAxis,
                    colorList,
                    yAxisExperimentArray,
-                   clearPlot=False):
+                   clearPlot=False,
+                   UVvisPlot=False,
+                   fluorescencePlot=False):
     r'''This reads in UVvis files and assigns x- and y- axes to an input array
     for a given experiment nubmer which is also a parameter.
     
@@ -124,9 +126,19 @@ def plotExperiment(fileNumber,
         if clearPlot: 
             ax.clear()
 
-        ax.plot(xAxisPlotting[max_index:min_index], yAxisPlotting[max_index:min_index], color=next(colorList))
+        if UVvisPlot:
+            ax.plot(xAxisPlotting[max_index:min_index], yAxisPlotting[max_index:min_index], color=next(colorList))
+            ax.set_ylabel("Absorbance (a.u.)")
+            ax.set_title("UV-vis")
+
+        if fluorescencePlot:
+            ax.plot(xAxisPlotting[min_index:max_index], yAxisPlotting[min_index:max_index], color=next(colorList))
+            ax.set_ylabel("Intensity (a.u.)")
+            ax.set_title("Fluorescence")
+            ax.yaxis.tick_right()
+            ax.yaxis.set_label_position("right")
+
         ax.set_xlabel("Wavelength (nm)")
-        ax.set_ylabel("UV-vis Absorbance (a.u.)")
         canvas.show()
         canvas.get_tk_widget().grid(row=4,rowspan=60,column=7,columnspan=60)
         canvas.draw()
