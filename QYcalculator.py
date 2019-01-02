@@ -160,13 +160,15 @@ def QYcalculator():
         # Standard UV-vis
         thisText = ('File #%d:' % thisText_i) 
         tk.Label(page1,text=thisText).grid(row=i+1,column=0) 
-        tk.Button(page1,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readUVvis(
+        tk.Button(page1,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readFile(
             update_in_progress=update_in_progress,
             fileNumber=i,
             experimentNumber=expNo[i],
             yAxis=yAxis,
             xAxis=xAxis,
-            yAxisExperimentArray_UVvis=yAxisExperimentArray_standardUVvis)).grid(row=i+1,column=1)
+            yAxisExperimentArray=yAxisExperimentArray_standardUVvis,
+            maxLength=maxLength
+            )).grid(row=i+1,column=1)
         thisText = ('Experiment #%d:' % thisText_i)
         tk.Label(page1,text=thisText).grid(row=i+1,column=3)
         tk.Entry(page1,textvariable=expNo[i],width=4).grid(row=i+1,column=4)
@@ -180,7 +182,7 @@ def QYcalculator():
             xAxis=xAxis,
             yAxis=yAxis,
             colorList=colorList,
-            yAxisExperimentArray_UVvis=yAxisExperimentArray_standardUVvis
+            yAxisExperimentArray=yAxisExperimentArray_standardUVvis
             )).grid(row=i+1,column=5)
         tk.Button(page1,bg=myGreen,text="Clear&Plot",command=lambda i=i:QYCfunc.clearAndPlotUVvis(
             fileNumber=i,
@@ -192,19 +194,20 @@ def QYcalculator():
             xAxis=xAxis,
             yAxis=yAxis,
             colorList=colorList,
-            yAxisExperimentArray_UVvis=yAxisExperimentArray_standardUVvis
+            yAxisExperimentArray=yAxisExperimentArray_standardUVvis
             )).grid(row=i+1,column=6)
 
         # Standard fluorescence
         thisText = ('File #%d:' % thisText_i)
         tk.Label(page1,text=thisText).grid(row=i+15,column=0) 
-        tk.Button(page1,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readFluorescence(
+        tk.Button(page1,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readFile(
+            update_in_progress=update_in_progress,
             fileNumber=i,
             experimentNumber=expNo_standardPL[i],
             yAxis=yAxis_standardPL,
             xAxis=xAxis_standardPL,
-            update_in_progress=update_in_progress,
-            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_standardPL 
+            yAxisExperimentArray=yAxisExperimentArray_standardPL,
+            maxLength=maxLength 
             )).grid(row=i+15,column=1)
         thisText = ('Experiment #%d:' % thisText_i)
         tk.Label(page1,text=thisText).grid(row=i+15,column=3)
@@ -263,13 +266,14 @@ def QYcalculator():
         # Sample UV-vis
         thisText = ('File #%d:' % thisText_i) 
         tk.Label(page2,text=thisText).grid(row=i+1,column=0) 
-        tk.Button(page2,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readUVvis(
+        tk.Button(page2,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readFile(
             update_in_progress=update_in_progress,
             fileNumber=i,
             experimentNumber=expNo_sample[i],
             yAxis=yAxisUVvisSample,
             xAxis=xAxisUVvisSample,
-            yAxisExperimentArray_UVvis=yAxisExperimentArray_sampleUVvis 
+            yAxisExperimentArray=yAxisExperimentArray_sampleUVvis,
+            maxLength=maxLength 
             )).grid(row=i+1,column=1)
         thisText = ('Experiment #%d:' % thisText_i)
         tk.Label(page2,text=thisText).grid(row=i+1,column=3)
@@ -302,13 +306,14 @@ def QYcalculator():
         # Sample fluorescence
         thisText = ('File #%d:' % thisText_i)
         tk.Label(page2,text=thisText).grid(row=i+15,column=0) 
-        tk.Button(page2,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readFluorescence(
+        tk.Button(page2,bg=myGreen,text="Browse",command=lambda i=i:QYCfunc.readFile(
+            update_in_progress=update_in_progress,
             fileNumber=i,
             experimentNumber=expNo_samplePL[i],
             yAxis=yAxis_samplePL,
             xAxis=xAxis_samplePL,
-            update_in_progress=update_in_progress,
-            yAxisExperimentArray_Fluorescence=yAxisExperimentArray_samplePL 
+            yAxisExperimentArray=yAxisExperimentArray_samplePL,
+            maxLength=maxLength 
             )).grid(row=i+15,column=1)
         thisText = ('Experiment #%d:' % thisText_i)
         tk.Label(page2,text=thisText).grid(row=i+15,column=3)

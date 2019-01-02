@@ -7,12 +7,13 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 import scipy as scipy
 from scipy import optimize
 
-def readUVvis(update_in_progress,
-              fileNumber,
-              experimentNumber,
-              yAxis,
-              xAxis,
-              yAxisExperimentArray_UVvis):
+def readFile(update_in_progress,
+             fileNumber,
+             experimentNumber,
+             yAxis,
+             xAxis,
+             yAxisExperimentArray,
+             maxLength):
     r'''This reads in UVvis files and assigns x- and y- axes to an input array
     for a given experiment nubmer which is also a parameter.
     
@@ -48,31 +49,25 @@ def readUVvis(update_in_progress,
         return
 
     else:
-        fileName =  tkFileDialog.askopenfilename(title='Choose a UV-vis file')
+        fileName =  tkFileDialog.askopenfilename(title='Choose a file')
         rawData_1 = np.genfromtxt(str(fileName), delimiter=",")
         rawData_2 = np.delete(rawData_1, list(range(2, rawData_1.shape[1], 2)), axis=1)
         rawData_3 = np.transpose(rawData_2)
         x_1 = rawData_3[0,:]
         y_1 = rawData_3[1:,:]
 
-        x_Global = np.ones(x_1.shape[0])
-        for i in range(x_1.shape[0]):
-            x_Global[i] = x_1[i]
-        xLength = x_Global.shape[0]
-        xAxis[fileNumber] = np.zeros((1000))
-
-        y_Global = np.ones((y_1.shape[0],y_1.shape[1]))
-        for i in range(y_1.shape[0]):
-            for j in range(y_1.shape[1]):
-                y_Global[i,j] = y_1[i,j]
-        yLength_1 = y_Global.shape[0]
-        yLength_2 = y_Global.shape[1]
-        yAxis[fileNumber] = np.zeros((1000,1000))
+        # Resetting the global x- and y-axes so user can re-select file
+        xAxis[fileNumber] = np.zeros((maxLength))
+        yAxis[fileNumber] = np.zeros((maxLength,maxLength))
 
         update_in_progress = True
-        yAxisExperimentArray_UVvis[fileNumber] = expNumber
-        xAxis[fileNumber][0:xLength] = x_Global
-        yAxis[fileNumber,0:yLength_1,0:yLength_2] = y_Global
+        yAxisExperimentArray[fileNumber] = expNumber
+        for i in range(x_1.shape[0]):
+            xAxis[fileNumber][i] = x_1[i]
+
+        for i in range(y_1.shape[0]):
+            for j in range(y_1.shape[1]):
+                yAxis[fileNumber][i][j] = y_1[i][j]
         update_in_progress = False
 
 def plotUVvis(fileNumber, 
@@ -84,7 +79,7 @@ def plotUVvis(fileNumber,
               xAxis,
               yAxis,
               colorList,
-              yAxisExperimentArray_UVvis):
+              yAxisExperimentArray):
     r'''This reads in UVvis files and assigns x- and y- axes to an input array
     for a given experiment nubmer which is also a parameter.
     
@@ -105,6 +100,8 @@ def plotUVvis(fileNumber,
         yAxisExperimentArray_UVvis[fileNumber] = expNumber     
 
     Notes to EGR:
+        (1) can combine with clear&plot function by adding a boolean argument
+            which if True, clears before plots
 
     '''
     if update_in_progress: 
@@ -118,10 +115,13 @@ def plotUVvis(fileNumber,
 
     else:
         columnNumber = expNumber - 1
-        yAxisPlotting = yAxis[fileNumber][columnNumber][:]
+        yAxisPlotting = yAxis[fileNumber][columnNumber]
         xAxisPlotting = xAxis[fileNumber]
 
-        ax.plot(xAxisPlotting, yAxisPlotting, color=next(colorList))
+        min_index = int((np.where(xAxisPlotting == np.min(xAxisPlotting[np.nonzero(xAxisPlotting)])))[0])
+        max_index = int((np.where(xAxisPlotting == np.max(xAxisPlotting[np.nonzero(xAxisPlotting)])))[0])
+
+        ax.plot(xAxisPlotting[max_index:min_index], yAxisPlotting[max_index:min_index], color=next(colorList))
         ax.set_xlabel("Wavelength (nm)")
         ax.set_ylabel("UV-vis Absorbance (a.u.)")
         canvas.show()
@@ -129,7 +129,7 @@ def plotUVvis(fileNumber,
         canvas.draw()
 
         update_in_progress = True
-        yAxisExperimentArray_UVvis[fileNumber] = expNumber
+        yAxisExperimentArray[fileNumber] = expNumber
         update_in_progress = False
 
 def clearAndPlotUVvis(fileNumber, 
@@ -141,8 +141,7 @@ def clearAndPlotUVvis(fileNumber,
                       xAxis,
                       yAxis,
                       colorList,
-                      yAxisExperimentArray_UVvis):
-
+                      yAxisExperimentArray):
     if update_in_progress: 
         return
 
@@ -154,11 +153,14 @@ def clearAndPlotUVvis(fileNumber,
 
     else:
         columnNumber = expNumber - 1
-        yAxisPlotting = yAxis[fileNumber][columnNumber][:]
+        yAxisPlotting = yAxis[fileNumber][columnNumber]
         xAxisPlotting = xAxis[fileNumber]
 
+        min_index = int((np.where(xAxisPlotting == np.min(xAxisPlotting[np.nonzero(xAxisPlotting)])))[0])
+        max_index = int((np.where(xAxisPlotting == np.max(xAxisPlotting[np.nonzero(xAxisPlotting)])))[0])
+
         ax.clear()
-        ax.plot(xAxisPlotting, yAxisPlotting, color=next(colorList))
+        ax.plot(xAxisPlotting[max_index:min_index], yAxisPlotting[max_index:min_index], color=next(colorList))
         ax.set_xlabel("Wavelength (nm)")
         ax.set_ylabel("UV-vis Absorbance (a.u.)")
         canvas.show()
@@ -166,7 +168,7 @@ def clearAndPlotUVvis(fileNumber,
         canvas.draw()
 
         update_in_progress = True
-        yAxisExperimentArray_UVvis[fileNumber] = expNumber
+        yAxisExperimentArray[fileNumber] = expNumber
         update_in_progress = False
 
 def readFluorescence(fileNumber,
